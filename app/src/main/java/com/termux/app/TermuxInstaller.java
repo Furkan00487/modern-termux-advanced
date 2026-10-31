@@ -296,6 +296,46 @@ final class TermuxInstaller {
             "exit 1\n";
     }
 
+    static String getTermuxX11EnvScriptContent() {
+        return "#!/data/data/com.termux/files/usr/bin/bash\n" +
+            "# Modern Termux: X11 GPU Donanım Hızlandırma Ortam Sarmalayıcısı\n" +
+            "HW_ACCEL_FLAG=\"/data/data/com.termux/files/usr/tmp/.lorie_hwaccel\"\n" +
+            "USE_GPU=1\n" +
+            "if [ -f \"$HW_ACCEL_FLAG\" ] && [ \"$(cat \"$HW_ACCEL_FLAG\" 2>/dev/null)\" = \"0\" ]; then\n" +
+            "  USE_GPU=0\n" +
+            "fi\n\n" +
+            "if [ \"$USE_GPU\" = \"1\" ] && [ -e /system/lib64/libvulkan.so ]; then\n" +
+            "  export GALLIUM_DRIVER=zink\n" +
+            "  export MESA_LOADER_DRIVER_OVERRIDE=zink\n" +
+            "  export LIBGL_ALWAYS_SOFTWARE=0\n" +
+            "  if [ -f /data/data/com.termux/files/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json ]; then\n" +
+            "    export VK_ICD_FILENAMES=/data/data/com.termux/files/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json\n" +
+            "  fi\n" +
+            "else\n" +
+            "  export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe\n" +
+            "  export LIBGL_ALWAYS_SOFTWARE=1\n" +
+            "fi\n\n" +
+            "if [ $# -gt 0 ]; then\n" +
+            "  exec \"$@\"\n" +
+            "fi\n";
+    }
+
+    static String getModernTermuxX11ProfileContent() {
+        return "# Modern Termux: Otomatik X11 GPU Donanım Hızlandırma Enjeksiyonu\n" +
+            "HW_ACCEL_FLAG=\"/data/data/com.termux/files/usr/tmp/.lorie_hwaccel\"\n" +
+            "if [ -n \"$DISPLAY\" ] || [ -S /data/data/com.termux/files/usr/tmp/.X11-unix/X0 ]; then\n" +
+            "  USE_GPU=1\n" +
+            "  if [ -f \"$HW_ACCEL_FLAG\" ] && [ \"$(cat \"$HW_ACCEL_FLAG\" 2>/dev/null)\" = \"0\" ]; then\n" +
+            "    USE_GPU=0\n" +
+            "  fi\n" +
+            "  if [ \"$USE_GPU\" = \"1\" ] && [ -e /system/lib64/libvulkan.so ]; then\n" +
+            "    export GALLIUM_DRIVER=zink\n" +
+            "    export MESA_LOADER_DRIVER_OVERRIDE=zink\n" +
+            "    export LIBGL_ALWAYS_SOFTWARE=0\n" +
+            "  fi\n" +
+            "fi\n";
+    }
+
     static void ensureTermuxX11FilesExist(Context context) {
         try {
             File binDir = TermuxConstants.TERMUX_BIN_PREFIX_DIR;
@@ -314,6 +354,25 @@ final class TermuxInstaller {
             }
             //noinspection OctalInteger
             Os.chmod(x11PrefScript.getAbsolutePath(), 0700);
+
+            File x11EnvScript = new File(binDir, "termux-x11-env");
+            try (FileOutputStream outStream = new FileOutputStream(x11EnvScript)) {
+                outStream.write(getTermuxX11EnvScriptContent().getBytes(StandardCharsets.UTF_8));
+            }
+            //noinspection OctalInteger
+            Os.chmod(x11EnvScript.getAbsolutePath(), 0700);
+
+            File profileDir = new File(TERMUX_PREFIX_DIR, "etc/profile.d");
+            if (!profileDir.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                profileDir.mkdirs();
+            }
+            File x11ProfileScript = new File(profileDir, "modern-termux-x11-env.sh");
+            try (FileOutputStream outStream = new FileOutputStream(x11ProfileScript)) {
+                outStream.write(getModernTermuxX11ProfileContent().getBytes(StandardCharsets.UTF_8));
+            }
+            //noinspection OctalInteger
+            Os.chmod(x11ProfileScript.getAbsolutePath(), 0644);
 
             if (context != null && context.getApplicationInfo() != null) {
                 File libexecDir = new File(TERMUX_PREFIX_DIR, "libexec/termux-x11");

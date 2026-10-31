@@ -125,4 +125,22 @@ public class TermuxX11IntegrationTest {
     public void testHardwareAccelerationFlagPathConstant() {
         assertEquals("/data/data/com.termux/files/usr/tmp/.lorie_hwaccel", com.termux.x11.LoriePreferences.HW_ACCEL_FLAG_PATH);
     }
+
+    @Test
+    public void testTermuxX11EnvScriptContentContainsZinkAndFallback() {
+        String script = TermuxInstaller.getTermuxX11EnvScriptContent();
+        assertTrue(script.contains("GALLIUM_DRIVER=zink"));
+        assertTrue(script.contains("MESA_LOADER_DRIVER_OVERRIDE=zink"));
+        assertTrue(script.contains("/system/lib64/libvulkan.so"));
+        assertTrue(script.contains(".lorie_hwaccel"));
+        assertTrue(script.contains("llvmpipe"));
+    }
+
+    @Test
+    public void testModernTermuxX11ProfileContentAutoInjectsWhenX11Active() {
+        String profile = TermuxInstaller.getModernTermuxX11ProfileContent();
+        assertTrue(profile.contains("GALLIUM_DRIVER=zink"));
+        assertTrue(profile.contains("MESA_LOADER_DRIVER_OVERRIDE=zink"));
+        assertTrue(profile.contains(".lorie_hwaccel"));
+    }
 }
