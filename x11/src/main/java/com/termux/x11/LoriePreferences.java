@@ -81,6 +81,19 @@ import java.util.regex.PatternSyntaxException;
 
 @SuppressWarnings("deprecation")
 public class LoriePreferences extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+    public static final String HW_ACCEL_FLAG_PATH = "/data/data/com.termux/files/usr/tmp/.lorie_hwaccel";
+
+    public static void syncHardwareAccelerationFlag(boolean enabled) {
+        try {
+            java.io.File flag = new java.io.File(HW_ACCEL_FLAG_PATH);
+            java.io.File parent = flag.getParentFile();
+            if (parent != null && !parent.exists()) parent.mkdirs();
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(flag)) {
+                fos.write((enabled ? "1\n" : "0\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        } catch (Exception ignored) {}
+    }
+
     static final String ACTION_PREFERENCES_CHANGED = "com.termux.x11.ACTION_PREFERENCES_CHANGED";
     private Prefs prefs;
 
@@ -841,6 +854,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 if (isSharedAcrossDisplays(key))
                     ((LorieApp) ctx.getApplicationContext()).builtInPrefs.preferences.edit().putBoolean(key, v).commit();
                 preferences.edit().putBoolean(key, v).commit();
+                if ("hardwareAcceleration".equals(key)) {
+                    syncHardwareAccelerationFlag(v);
+                }
             }
         }
 
@@ -952,6 +968,9 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                 ((LorieApp) ctx.getApplicationContext()).builtInPrefs.preferences.edit().putBoolean(k, v).commit();
             else
                 preferences.edit().putBoolean(k, v).commit();
+            if ("hardwareAcceleration".equals(k)) {
+                syncHardwareAccelerationFlag(v);
+            }
         }
         @Override public boolean getBoolean(String k, boolean d) {
             checkAttached();

@@ -205,6 +205,12 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
 
     private static void initEntryPoint() {
         ctx = createContext();
+        if (ctx != null) {
+            try {
+                android.content.SharedPreferences p = ctx.getSharedPreferences(LorieApp.X11_PREFS_NAME, Context.MODE_PRIVATE);
+                LoriePreferences.syncHardwareAccelerationFlag(p.getBoolean("hardwareAcceleration", true));
+            } catch (Exception ignored) {}
+        }
 
         String symlinkPath = "/data/data/com.termux/files/usr/libexec/termux-x11/libXlorie.so";
         String nativeDirLibPath = null;

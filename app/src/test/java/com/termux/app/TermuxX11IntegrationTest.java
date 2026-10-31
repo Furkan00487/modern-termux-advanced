@@ -120,4 +120,9 @@ public class TermuxX11IntegrationTest {
         assertTrue(content.contains("app:defaultValue=\"true\""));
         assertTrue(content.contains("@string/lorie_pref_hardware_acceleration"));
     }
+
+    @Test
+    public void testHardwareAccelerationFlagPathConstant() {
+        assertEquals("/data/data/com.termux/files/usr/tmp/.lorie_hwaccel", com.termux.x11.LoriePreferences.HW_ACCEL_FLAG_PATH);
+    }
 }
