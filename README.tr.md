@@ -53,6 +53,7 @@
 ## Temel Özellikler
 
 - **Dahili X11 Ekran Sunucusu:** Termux:X11 motoru doğrudan uygulamanın içerisine gömülmüştür. Yan uygulama kurma, izin karmaşası veya imza uyuşmazlığı yaşanmaz.
+- **Dahili GPU Donanım Hızlandırma Desteği:** X11 Tercihlerinde varsayılan olarak açık gelen GPU köprüsü ile uygulamalar (Firefox, Chromium, 3D oyunlar, Blender, MPV) telefonun yerel Mali/Adreno GPU'sundan (Vulkan/Zink) tam performans alır.
 - **Dinamik Bildirim Çubuğu Simgesi:** Kalıcı servis bildirimi mevcut çalışma alanınızı gösterir: X11 ekranı aktifken Neon Cyan `X_`, terminal oturumlarında ise Neon Cyan `>_` simgesi görüntülenir.
 - **Pil Dostu Olay Güdümlü Yaşam Döngüsü:** Termux:X11'deki işlemciyi yoran 200 milisaniyelik `serverWatchdog` yoklama döngüsü tamamen kaldırılmıştır. `onActivityResumed` ve `onActivityPaused` yaşam döngüsüyle sıfır ek yükle çalışır.
 - **Kullanıma Hazır Ses ve Mikrofon:** Uygulama `RECORD_AUDIO` iznine sahiptir; ses kaydı ve çalma işlemleri için `termux-setup-microphone` komutu dahili olarak sunulur.
@@ -186,6 +187,16 @@ termux-x11-preference list
 
 # Ayarları güncelleyin (örn. ölçekleme ve tam ekran):
 termux-x11-preference displayScale:100 fullscreen:true
+```
+
+### `termux-x11-env`
+X11 uygulamalarını telefonun donanım GPU'sunu (Vulkan/Zink köprüsü) kullanarak hızlandırılmış olarak başlatır:
+```bash
+# Donanım hızlandırmalı Firefox başlatın:
+termux-x11-env firefox
+
+# Genel herhangi bir 3D/X11 uygulamasını GPU ile çalıştırın:
+termux-x11-env glxgears
 ```
 
 ### `termux-setup-microphone`

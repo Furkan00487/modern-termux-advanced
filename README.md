@@ -53,6 +53,7 @@
 ## Key Features
 
 - **Integrated X11 display server:** The complete Termux:X11 display server is built into the application package. No companion APKs or signature mismatch headaches.
+- **Out-of-the-box GPU Hardware Acceleration:** Built-in hardware acceleration preference enabled by default, bridging X11 clients (Firefox, Chromium, 3D games, Blender, MPV) to device GPU via Mesa Zink and Vulkan.
 - **Dynamic status bar icon:** The persistent foreground notification icon dynamically reflects current activity: Neon Cyan `X_` while the X11 screen is active, and `>_` when in terminal sessions.
 - **Battery-friendly event-driven lifecycle:** The legacy 200 ms `serverWatchdog` polling thread has been completely removed. State changes hook into `onActivityResumed` and `onActivityPaused` with zero continuous CPU wakeups.
 - **Audio and microphone ready:** Includes the Android `RECORD_AUDIO` permission out of the box and bundles `termux-setup-microphone` to request runtime audio permissions instantly.
@@ -186,6 +187,16 @@ termux-x11-preference list
 
 # Change preferences (e.g. resolution scale, fullscreen mode):
 termux-x11-preference displayScale:100 fullscreen:true
+```
+
+### `termux-x11-env`
+Launch X11 apps with GPU hardware acceleration (Vulkan/Zink bridge):
+```bash
+# Launch hardware-accelerated Firefox:
+termux-x11-env firefox
+
+# Run general 3D/X11 applications on GPU:
+termux-x11-env glxgears
 ```
 
 ### `termux-setup-microphone`
