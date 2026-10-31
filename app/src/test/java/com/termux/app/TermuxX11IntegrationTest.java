@@ -109,4 +109,15 @@ public class TermuxX11IntegrationTest {
         assertTrue(script.contains("dyn-motd.sh"));
         assertTrue(script.contains("exit 1"));
     }
+
+    @Test
+    public void testHardwareAccelerationPreferenceDefinitionInXml() throws Exception {
+        File prefXml = new File("../x11/src/main/res/xml/preferences.xml");
+        if (!prefXml.exists()) prefXml = new File("x11/src/main/res/xml/preferences.xml");
+        assertTrue("preferences.xml exists", prefXml.exists());
+        String content = new String(java.nio.file.Files.readAllBytes(prefXml.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(content.contains("hardwareAcceleration"));
+        assertTrue(content.contains("app:defaultValue=\"true\""));
+        assertTrue(content.contains("@string/lorie_pref_hardware_acceleration"));
+    }
 }

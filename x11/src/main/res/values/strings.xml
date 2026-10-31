@@ -126,6 +126,8 @@
     <string name="lorie_pref_summary_requiresExactOrCustom">&quot;Ekran çözünürlük modu&quot;nun &quot;Tam (Exact)&quot; veya &quot;Özel (Custom)&quot; olmasını gerektirir</string>
     <string name="lorie_pref_summary_requiresIntercepting">DeX modu veya Erişilebilirlik servisi ile sistem kısayollarının yakalanmasını gerektirir</string>
     <string name="lorie_pref_summary_requiresTrackpadAndNative">&quot;Dokunmatik ekran giriş modu&quot;nun &quot;Dokunmatik yüzey (Trackpad)&quot; olmasını ve &quot;Ekran çözünürlük modu&quot;nun &quot;Doğal (Native)&quot; olmamasını gerektirir</string>
+    <string name="lorie_pref_hardware_acceleration">Donanım Hızlandırma (GPU)</string>
+    <string name="lorie_pref_hardware_acceleration_summary">X11 uygulamalarını cihazın yerel GPU\'sunu (Vulkan/Zink) kullanarak hızlandır</string>
     <string name="lorie_pref_summary_screenIdleTimeoutConflict">⚠️ Sistem ekran zaman aşımı (%s) daha uzun olduğu için önceliklidir</string>
     <string name="lorie_pref_screenIdleTimeoutSystem">Sistem (%s)</string>
 </resources>
