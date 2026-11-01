@@ -17,6 +17,7 @@ buildscript {
         classpath "org.apache.commons:commons-compress:1.28.0"
         classpath "org.apache.commons:commons-lang3:3.21.0"
         classpath "org.tukaani:xz:1.12"
+        classpath "com.google.guava:guava:33.7.2-jre"
     }
     configurations.classpath {
         resolutionStrategy {
@@ -33,6 +34,7 @@ buildscript {
             force "com.google.protobuf:protobuf-kotlin:4.36.2"
             force "org.apache.commons:commons-compress:1.28.0"
             force "org.apache.commons:commons-lang3:3.21.0"
+            force "com.google.guava:guava:33.7.2-jre"
         }
     }
 }
@@ -58,6 +60,7 @@ allprojects {
             force "com.google.protobuf:protobuf-kotlin:4.36.2"
             force "org.apache.commons:commons-compress:1.28.0"
             force "org.apache.commons:commons-lang3:3.21.0"
+            force "com.google.guava:guava:33.7.2-android"
         }
     }
 }
