@@ -611,7 +611,7 @@ public abstract class TermuxSharedProperties {
     }
 
     public boolean shouldPasteNewlinesAsSpaces() {
-        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_PASTE_NEWLINES_AS_SPACES, true);
+        return (boolean) getInternalPropertyValue(TermuxPropertyConstants.KEY_PASTE_NEWLINES_AS_SPACES, false);
     }
 
     public boolean shouldOpenTerminalTranscriptURLOnClick() {

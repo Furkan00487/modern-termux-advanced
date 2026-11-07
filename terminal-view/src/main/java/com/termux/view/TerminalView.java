@@ -54,7 +54,7 @@ public final class TerminalView extends View {
     public TerminalEmulator mEmulator;
 
     /** Whether multi-line pasted text converts newlines to spaces to prevent accidental command execution. */
-    private boolean mPasteNewlinesAsSpaces = true;
+    private boolean mPasteNewlinesAsSpaces = false;
 
     public boolean shouldPasteNewlinesAsSpaces() {
         return mPasteNewlinesAsSpaces;
@@ -378,8 +378,18 @@ public final class TerminalView extends View {
                 if (mEmulator == null) return true;
 
                 Editable content = getEditable();
+                String textString = (content != null) ? content.toString() : (text != null ? text.toString() : null);
+                if (textString != null && (textString.contains("\n") || textString.contains("\r"))) {
+                    if (content != null) content.clear();
+                    if (mClient != null && mClient.onPasteText(textString)) {
+                        return true;
+                    }
+                    mEmulator.paste(textString);
+                    return true;
+                }
+
                 sendTextToTerminal(content);
-                content.clear();
+                if (content != null) content.clear();
                 return true;
             }
 

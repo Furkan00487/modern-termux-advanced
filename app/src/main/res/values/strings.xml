@@ -253,4 +253,11 @@
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
 
+    <!-- Multi-line Paste Dialog -->
+    <string name="title_multiline_paste">Multi-line Paste</string>
+    <string name="msg_multiline_paste">Pasting %1$d lines of text into the terminal:</string>
+    <string name="action_paste_normal">Paste</string>
+    <string name="action_paste_as_spaces">Paste as Spaces</string>
+    <string name="action_cancel">Cancel</string>
+
 </resources>

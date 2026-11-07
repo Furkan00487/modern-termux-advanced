@@ -246,7 +246,7 @@ public final class TerminalEmulator {
     /**
      * Whether multi-line pasted text converts newlines to spaces to prevent accidental command execution.
      */
-    private boolean mPasteNewlinesAsSpaces = true;
+    private boolean mPasteNewlinesAsSpaces = false;
 
     /**
      * Current foreground, background and underline colors. Can either be a color index in [0,259] or a truecolor (24-bit) value.
@@ -2603,8 +2603,11 @@ public final class TerminalEmulator {
         if (text == null) return;
         // First: Always remove escape key and C1 control characters [0x80,0x9F]:
         text = text.replaceAll("(\u001B|[\u0080-\u009F])", "");
-        // Second: Handle newlines. If mPasteNewlinesAsSpaces is true, convert all newlines to spaces
-        // to prevent accidental line-by-line command execution. Otherwise, replace CRLF or LF with CR (\r).
+        // Second: Trim trailing newlines to prevent accidental auto-execution of the last line:
+        text = text.replaceAll("[\r\n]+$", "");
+        // Third: Handle newlines. If mPasteNewlinesAsSpaces is true, convert all newlines to spaces
+        // to prevent accidental line-by-line command execution. Otherwise, replace CRLF or LF with CR (\r)
+        // to preserve multi-line code formatting and indentation.
         if (mPasteNewlinesAsSpaces) {
             text = text.replaceAll("\r?\n", " ");
         } else {

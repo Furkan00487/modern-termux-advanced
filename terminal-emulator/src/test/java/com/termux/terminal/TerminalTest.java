@@ -136,6 +136,25 @@ public class TerminalTest extends TerminalTestCase {
 		assertEquals("hi", mOutput.getOutputAndClear());
 	}
 
+	public void testPastePreservesNewlinesAndTrimsTrailing() {
+		withTerminalSized(5, 5);
+		// Internal newlines should be preserved as \r, trailing newlines should be stripped:
+		mTerminal.paste("def f():\n    pass\n");
+		assertEquals("def f():\r    pass", mOutput.getOutputAndClear());
+
+		// When pasteNewlinesAsSpaces is explicitly enabled:
+		mTerminal.setPasteNewlinesAsSpaces(true);
+		mTerminal.paste("def f():\n    pass\n");
+		assertEquals("def f():     pass", mOutput.getOutputAndClear());
+		mTerminal.setPasteNewlinesAsSpaces(false);
+
+		// With bracketed paste mode:
+		enterString("\033[?2004h");
+		mTerminal.paste("line1\nline2\r\n");
+		assertEquals("\033[200~line1\rline2\033[201~", mOutput.getOutputAndClear());
+		enterString("\033[?2004l");
+	}
+
 	public void testSelectGraphics() {
 		selectGraphicsTestRun(';');
 		selectGraphicsTestRun(':');

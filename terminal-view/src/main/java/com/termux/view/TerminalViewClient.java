@@ -66,6 +66,16 @@ public interface TerminalViewClient {
     void onEmulatorSet();
 
 
+    /**
+     * Called when multi-line text is pasted or committed via IME/clipboard.
+     * @param text The text being pasted.
+     * @return {@code true} if handled by the client, {@code false} to allow default terminal emulator paste.
+     */
+    default boolean onPasteText(String text) {
+        return false;
+    }
+
+
     void logError(String tag, String message);
 
     void logWarn(String tag, String message);

@@ -797,6 +797,14 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         }.start();
     }
 
+    @Override
+    public boolean onPasteText(String text) {
+        TerminalSession session = mActivity.getCurrentSession();
+        if (session == null || !session.isRunning()) return false;
+        handlePaste(text, session);
+        return true;
+    }
+
     public void doPaste() {
         TerminalSession session = mActivity.getCurrentSession();
         if (session == null) return;
@@ -804,11 +812,73 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
         String text = ShareUtils.getTextStringFromClipboardIfSet(mActivity, true);
         if (text != null && session.getEmulator() != null) {
+            handlePaste(text, session);
+        }
+    }
+
+    public void handlePaste(final String text, final TerminalSession session) {
+        if (text == null || session == null || session.getEmulator() == null) return;
+
+        // If multi-line text (contains \n or \r):
+        if (text.contains("\n") || text.contains("\r")) {
+            // If user explicitly configured paste-newlines-as-spaces in termux.properties, respect it directly:
+            if (mActivity.getProperties() != null && mActivity.getProperties().shouldPasteNewlinesAsSpaces()) {
+                session.getEmulator().setPasteNewlinesAsSpaces(true);
+                session.getEmulator().paste(text);
+                return;
+            }
+
+            showMultiLinePasteDialog(text, session);
+        } else {
+            // Single-line text: paste immediately with zero delay
             if (mActivity.getProperties() != null) {
                 session.getEmulator().setPasteNewlinesAsSpaces(mActivity.getProperties().shouldPasteNewlinesAsSpaces());
             }
             session.getEmulator().paste(text);
         }
+    }
+
+    private void showMultiLinePasteDialog(final String text, final TerminalSession session) {
+        if (mActivity == null || !mActivity.isVisible()) {
+            // Fallback if activity not visible: paste directly preserving newlines
+            session.getEmulator().setPasteNewlinesAsSpaces(false);
+            session.getEmulator().paste(text);
+            return;
+        }
+
+        String[] lines = text.split("\r?\n");
+        int lineCount = lines.length;
+
+        // Build a short preview (up to 4 lines)
+        StringBuilder preview = new StringBuilder();
+        int previewLimit = Math.min(lineCount, 4);
+        for (int i = 0; i < previewLimit; i++) {
+            if (i > 0) preview.append("\n");
+            String line = lines[i];
+            if (line.length() > 60) {
+                line = line.substring(0, 57) + "...";
+            }
+            preview.append("  ").append(line);
+        }
+        if (lineCount > previewLimit) {
+            preview.append("\n  ...");
+        }
+
+        String message = mActivity.getString(R.string.msg_multiline_paste, lineCount) + "\n\n" + preview.toString();
+
+        new AlertDialog.Builder(mActivity)
+            .setTitle(R.string.title_multiline_paste)
+            .setMessage(message)
+            .setPositiveButton(R.string.action_paste_normal, (dialog, which) -> {
+                session.getEmulator().setPasteNewlinesAsSpaces(false);
+                session.getEmulator().paste(text);
+            })
+            .setNeutralButton(R.string.action_paste_as_spaces, (dialog, which) -> {
+                session.getEmulator().setPasteNewlinesAsSpaces(true);
+                session.getEmulator().paste(text);
+            })
+            .setNegativeButton(R.string.action_cancel, null)
+            .show();
     }
 
 }

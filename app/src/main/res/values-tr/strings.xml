@@ -243,4 +243,11 @@
     <!-- Donate Preference -->
     <string name="donate_preference_title">Bağış Yap</string>
 
+    <!-- Multi-line Paste Dialog -->
+    <string name="title_multiline_paste">Çok Satırlı Yapıştırma</string>
+    <string name="msg_multiline_paste">Terminale %1$d satır metin yapıştırılıyor:</string>
+    <string name="action_paste_normal">Olduğu Gibi Yapıştır</string>
+    <string name="action_paste_as_spaces">Boşluk Olarak Yapıştır</string>
+    <string name="action_cancel">İptal</string>
+
 </resources>
