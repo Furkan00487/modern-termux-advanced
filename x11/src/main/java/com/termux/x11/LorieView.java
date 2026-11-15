@@ -773,6 +773,20 @@ public class LorieView extends SurfaceView implements InputStub {
             mSyncListener.onSyncReply(serial);
     }
 
+    @Keep
+    @SuppressWarnings("unused")
+    private void setAppSleepInhibited(boolean inhibited) {
+        if (activity != null)
+            activity.setX11SleepInhibited(inhibited);
+    }
+
+    @Keep
+    @SuppressWarnings("unused")
+    private void onX11ScreenSaverReset() {
+        if (activity != null)
+            activity.onX11ScreenSaverReset();
+    }
+
     /** The portion of the X11 screen currently visible, in X11 screen coordinates. */
     public RectF getInputSourceRect() {
         return new RectF(inputSourceLeft, inputSourceTop, inputSourceLeft + inputSourceWidth, inputSourceTop + inputSourceHeight);

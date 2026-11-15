@@ -561,6 +561,20 @@ extern "C" void DDXNotifyFocusChanged(void) {
     }
 }
 
+extern "C" void lorieSendScreenSaverState(Bool suspended) {
+    if (conn_fd != -1) {
+        lorieEvent e = { .screenSaverState = { .t = EVENT_SCREENSAVER_STATE, .suspended = (uint8_t) (suspended ? 1 : 0) } };
+        write(conn_fd, &e, sizeof(e));
+    }
+}
+
+extern "C" void lorieSendScreenSaverReset(void) {
+    if (conn_fd != -1) {
+        lorieEvent e = { .type = EVENT_SCREENSAVER_RESET };
+        write(conn_fd, &e, sizeof(e));
+    }
+}
+
 static jobject getXConnection(JNIEnv *env, __unused jobject cls) {
     int client[2];
     jclass ParcelFileDescriptorClass = env->FindClass("android/os/ParcelFileDescriptor");

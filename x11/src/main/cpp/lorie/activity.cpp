@@ -38,7 +38,7 @@ static int64_t nowMs() {
 
 static struct {
     jclass self;
-    jmethodID clientConnectedStateChanged, resetIme;
+    jmethodID clientConnectedStateChanged, resetIme, setAppSleepInhibited, onX11ScreenSaverReset;
     jfieldID lastServerHeartbeat;
 } MainActivity = {nullptr};
 
@@ -149,7 +149,11 @@ static jlong nativeInit(JNIEnv *env, jobject thiz) {
         MainActivity.self = FindClassOrDie(env,  "com/termux/x11/MainActivity");
         MainActivity.clientConnectedStateChanged = FindMethodOrDie(env, MainActivity.self, "clientConnectedStateChanged", "()V", JNI_FALSE);
         MainActivity.lastServerHeartbeat = env->GetFieldID(MainActivity.self, "lastServerHeartbeat", "J");
-        MainActivity.resetIme = FindMethodOrDie(env, env->GetObjectClass(thiz), "resetIme", "()V", JNI_FALSE);
+        jclass viewClass = env->GetObjectClass(thiz);
+        MainActivity.resetIme = FindMethodOrDie(env, viewClass, "resetIme", "()V", JNI_FALSE);
+        MainActivity.setAppSleepInhibited = FindMethodOrDie(env, viewClass, "setAppSleepInhibited", "(Z)V", JNI_FALSE);
+        MainActivity.onX11ScreenSaverReset = FindMethodOrDie(env, viewClass, "onX11ScreenSaverReset", "()V", JNI_FALSE);
+        env->DeleteLocalRef(viewClass);
     }
 
     return (jlong) (intptr_t) new (malloc(sizeof(LorieViewResources))) LorieViewResources(env, thiz);
@@ -286,6 +290,14 @@ int LorieViewResources::xcallback(int fd, int events) {
                 case EVENT_SYNC_REPLY: {
                     jmethodID id = env->GetMethodID(env->GetObjectClass(thiz), "onSyncReply", "(I)V");
                     env->CallVoidMethod(thiz, id, (jint) e.sync.serial);
+                    break;
+                }
+                case EVENT_SCREENSAVER_STATE: {
+                    env->CallVoidMethod(thiz, MainActivity.setAppSleepInhibited, (jboolean) (e.screenSaverState.suspended != 0));
+                    break;
+                }
+                case EVENT_SCREENSAVER_RESET: {
+                    env->CallVoidMethod(thiz, MainActivity.onX11ScreenSaverReset);
                     break;
                 }
             }

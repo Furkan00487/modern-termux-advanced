@@ -47,6 +47,8 @@ void lorieSetRendererWakeupCond(int fd);
 void lorieSetCursorVisible(Bool visible);
 void lorieSendSyncReply(uint32_t serial);
 void lorieSendHeartbeat(void);
+void lorieSendScreenSaverState(Bool suspended);
+void lorieSendScreenSaverReset(void);
 
 typedef struct {
     uint16_t code; // Linux key code that does not fit into X keycode range.
@@ -124,6 +126,8 @@ typedef enum {
     EVENT_SYNC,
     EVENT_SYNC_REPLY,
     EVENT_HEARTBEAT,
+    EVENT_SCREENSAVER_STATE,
+    EVENT_SCREENSAVER_RESET,
 } eventType;
 
 typedef union {
@@ -183,6 +187,10 @@ typedef union {
         uint8_t t;
         uint32_t serial;
     } sync;
+    struct {
+        uint8_t t;
+        uint8_t suspended;
+    } screenSaverState;
 } lorieEvent;
 
 typedef struct { int16_t x1, y1, x2, y2; } LorieGpuCopyRect;

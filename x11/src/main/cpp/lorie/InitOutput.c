@@ -198,10 +198,14 @@ void lorieSetRendererWakeupCond(int fd) {
     lorieWakeServer();
 }
 
+static Bool lastScreenSaverSuspended = FALSE;
+
 void lorieActivityConnected(void) {
     pvfb->state->drawRequested = pvfb->state->cursor.updated = true;
     lorieSendSharedServerState(pvfb->stateFd);
     lorieRegisterBuffer(LORIE_BUFFER_FROM_PIXMAP(pScreenPtr->devPrivate));
+    lastScreenSaverSuspended = screenSaverSuspended;
+    lorieSendScreenSaverState(lastScreenSaverSuspended);
 }
 
 static LoriePixmapPriv* lorieRootWindowPixmapPriv(void) {
@@ -552,8 +556,26 @@ void ddxRequestDone(void) {
     lorieRequestLockRelease();
 }
 
+static Bool lorieSaveScreen(__unused ScreenPtr pScreen, int on) {
+    if (on == SCREEN_SAVER_FORCER || on == SCREEN_SAVER_OFF) {
+        static int64_t lastResetMs = -2000;
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        int64_t nowMs = (int64_t) ts.tv_sec * 1000LL + (int64_t) ts.tv_nsec / 1000000LL;
+        if (nowMs - lastResetMs >= 2000LL) {
+            lastResetMs = nowMs;
+            lorieSendScreenSaverReset();
+        }
+    }
+    return TRUE;
+}
+
 static void lorieBlockHandler(__unused void *data, __unused void *timeout) {
     ddxRequestDone();
+    if (screenSaverSuspended != lastScreenSaverSuspended) {
+        lastScreenSaverSuspended = screenSaverSuspended;
+        lorieSendScreenSaverState(lastScreenSaverSuspended);
+    }
 }
 
 static Bool lorieRedraw(__unused ClientPtr pClient, __unused void *closure) {
@@ -838,6 +860,7 @@ static Bool lorieScreenInit(ScreenPtr pScreen, unused int argc, unused char **ar
     pvfb->CloseScreen = pScreen->CloseScreen;
     pvfb->SetWindowPixmap = pScreenPtr->SetWindowPixmap;
     pScreen->CloseScreen = lorieCloseScreen;
+    pScreen->SaveScreen = lorieSaveScreen;
     pScreen->SetWindowPixmap = lorieSetWindowPixmap;
 
     ShmRegisterFbFuncs(pScreen);

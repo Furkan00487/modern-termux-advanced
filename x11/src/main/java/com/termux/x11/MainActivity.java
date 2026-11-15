@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
     /** The display the system letterboxed us on instead of rotating, {@code null} until it does. */
     private Rect orientationDeniedAt = null;
     private String screenIdleTimeoutArmedMode = null; // numeric screenIdleTimeout mode the pending idle check reflects, or null if none pending
+    private boolean x11SleepInhibited = false;
     private final Runnable screenIdleTimeoutCheck = this::checkScreenIdleTimeout;
     @Keep private long lastServerHeartbeat; // Kept for JNI activity.cpp compatibility
     /** Aspect ratios outside of the range the device is configured with are rejected by the system. */
@@ -1070,35 +1071,59 @@ public class MainActivity extends AppCompatActivity {
             getWindow().clearFlags(flag);
     }
 
+    /** Updates active X11/D-Bus sleep inhibition state and re-evaluates keep-screen-on immediately. */
+    void setX11SleepInhibited(boolean inhibited) {
+        runOnUiThread(() -> {
+            if (x11SleepInhibited == inhibited)
+                return;
+            if (x11SleepInhibited && !inhibited)
+                LorieView.markUserActivity();
+            x11SleepInhibited = inhibited;
+            handler.removeCallbacks(screenIdleTimeoutCheck);
+            screenIdleTimeoutArmedMode = null;
+            checkScreenIdleTimeout();
+        });
+    }
+
+    /** Refreshes user idle activity when an X11 client explicitly resets the X11 screen saver. */
+    void onX11ScreenSaverReset() {
+        runOnUiThread(() -> {
+            if (redirected || !getLorieView().connected())
+                return;
+            LorieView.markUserActivity();
+            if (!x11SleepInhibited) {
+                handler.removeCallbacks(screenIdleTimeoutCheck);
+                checkScreenIdleTimeout();
+            }
+        });
+    }
+
     /** Keeps or drops the screen-on flag based on elapsed idle time, rescheduling itself for the remaining time. */
     private void checkScreenIdleTimeout() {
         String mode = prefs.screenIdleTimeout.get();
-        if (!getLorieView().connected() || "never".equals(mode) || "system".equals(mode)) {
-            screenIdleTimeoutArmedMode = null;
-            return;
-        }
-
         long systemTimeoutMs = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, 0);
-        long timeoutMs = Math.max(Long.parseLong(mode) * 60_000L - systemTimeoutMs, 0);
         long elapsed = (System.nanoTime() / 1_000_000L) - LorieView.getLastInputTimestamp();
-        if (elapsed >= timeoutMs) {
-            screenIdleTimeoutArmedMode = null;
-            setWindowFlag(FLAG_KEEP_SCREEN_ON, false);
-        } else {
-            screenIdleTimeoutArmedMode = mode;
-            setWindowFlag(FLAG_KEEP_SCREEN_ON, true);
-            handler.postDelayed(screenIdleTimeoutCheck, timeoutMs - elapsed);
-        }
+        ScreenIdlePolicy.Decision decision = ScreenIdlePolicy.evaluate(
+                getLorieView().connected(),
+                x11SleepInhibited,
+                mode,
+                systemTimeoutMs,
+                elapsed);
+        screenIdleTimeoutArmedMode = decision.armedMode;
+        setWindowFlag(FLAG_KEEP_SCREEN_ON, decision.keepScreenOn);
+        if (decision.delayMs >= 0)
+            handler.postDelayed(screenIdleTimeoutCheck, decision.delayMs);
     }
 
     /** Syncs screenIdleTimeout state/timer to the current preference without extending an already-scheduled check. */
     private void applyScreenIdleTimeout() {
         String mode = prefs.screenIdleTimeout.get();
         boolean connected = getLorieView().connected();
-        if (!connected || "never".equals(mode) || "system".equals(mode)) {
+        if (!connected || x11SleepInhibited || "never".equals(mode) || "system".equals(mode)) {
             handler.removeCallbacks(screenIdleTimeoutCheck);
             screenIdleTimeoutArmedMode = null;
-            setWindowFlag(FLAG_KEEP_SCREEN_ON, connected && "never".equals(mode));
+            ScreenIdlePolicy.Decision decision = ScreenIdlePolicy.evaluate(connected, x11SleepInhibited, mode, 0, 0);
+            setWindowFlag(FLAG_KEEP_SCREEN_ON, decision.keepScreenOn);
         } else if (!mode.equals(screenIdleTimeoutArmedMode)) {
             handler.removeCallbacks(screenIdleTimeoutCheck);
             checkScreenIdleTimeout();
@@ -1241,8 +1266,10 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(()-> {
             boolean connected = getLorieView().connected();
             lastServerHeartbeat = SystemClock.uptimeMillis();
-            if (!connected)
+            if (!connected) {
+                x11SleepInhibited = false;
                 setCapturingEnabled(false);
+            }
 
             // A picture-in-picture window has nothing to show without a client, and there is no way
             // back to the normal size from it, so the window is closed.
