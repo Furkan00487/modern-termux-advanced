@@ -44,6 +44,9 @@
 #include "lorie.h"
 
 #define DRM_FORMAT_MOD_LINEAR 0
+#define LORIE_AHARDWAREBUFFER_SOCKET_FD 1255
+#define LORIE_AHARDWAREBUFFER_FLIPPED_SOCKET_FD 1256
+#define LORIE_RAW_MMAPPABLE_FD 1274
 
 extern void android_shmem_sysv_shm_force(uint8_t enable);
 
@@ -1280,9 +1283,9 @@ static PixmapPtr loriePixmapFromFds(ScreenPtr screen, CARD8 num_fds, const int *
                                     const CARD32 *strides, const CARD32 *offsets, CARD8 depth, __unused CARD8 bpp, CARD64 modifier) {
 #define fail(msg, ...) do { log(ERROR, msg, ##__VA_ARGS__); goto fail; } while(0)
 #define check(cond, msg, ...) if ((cond)) fail(msg, ##__VA_ARGS__)
-    const CARD64 AHARDWAREBUFFER_SOCKET_FD = 1255;
-    const CARD64 AHARDWAREBUFFER_FLIPPED_SOCKET_FD = 1256;
-    const CARD64 RAW_MMAPPABLE_FD = 1274;
+    const CARD64 AHARDWAREBUFFER_SOCKET_FD = LORIE_AHARDWAREBUFFER_SOCKET_FD;
+    const CARD64 AHARDWAREBUFFER_FLIPPED_SOCKET_FD = LORIE_AHARDWAREBUFFER_FLIPPED_SOCKET_FD;
+    const CARD64 RAW_MMAPPABLE_FD = LORIE_RAW_MMAPPABLE_FD;
     AHardwareBuffer_Desc desc = {0};
     AHardwareBuffer* buffer = NULL;
     PixmapPtr pixmap = NullPixmap;
@@ -1351,23 +1354,49 @@ static PixmapPtr loriePixmapFromFds(ScreenPtr screen, CARD8 num_fds, const int *
 }
 
 static int lorieGetFormats(__unused ScreenPtr screen, CARD32 *num_formats, CARD32 **formats) {
-    static CARD32 format = DRM_FORMAT_ARGB8888;
-    *num_formats = 1;
-    *formats = &format;
+    static const CARD32 supported_formats[] = {
+        DRM_FORMAT_ARGB8888,
+        DRM_FORMAT_XRGB8888,
+        DRM_FORMAT_ABGR8888,
+        DRM_FORMAT_XBGR8888,
+    };
+    const CARD32 count = sizeof(supported_formats) / sizeof(supported_formats[0]);
+    CARD32 *out = calloc(count, sizeof(CARD32));
+    if (!out) {
+        *num_formats = 0;
+        *formats = NULL;
+        return FALSE;
+    }
+    memcpy(out, supported_formats, sizeof(supported_formats));
+    *num_formats = count;
+    *formats = out;
     return TRUE;
 }
 
 static int lorieGetModifiers(__unused ScreenPtr screen, uint32_t format, uint32_t *num_modifiers, uint64_t **modifiers) {
-    static uint64_t modifier = DRM_FORMAT_MOD_LINEAR;
-
-    if (format != DRM_FORMAT_ARGB8888 && format != DRM_FORMAT_XRGB8888) {
+    if (format != DRM_FORMAT_ARGB8888 && format != DRM_FORMAT_XRGB8888 &&
+        format != DRM_FORMAT_ABGR8888 && format != DRM_FORMAT_XBGR8888) {
         *num_modifiers = 0;
         *modifiers = NULL;
         return TRUE;
     }
 
-    *num_modifiers = 1;
-    *modifiers = &modifier;
+    Bool advertise_ahb = pvfb && !pvfb->gpuPresentDisabled && !pvfb->root.legacyDrawing;
+    uint32_t count = advertise_ahb ? 2 : 1;
+    uint64_t *out = calloc(count, sizeof(uint64_t));
+    if (!out) {
+        *num_modifiers = 0;
+        *modifiers = NULL;
+        return FALSE;
+    }
+    if (advertise_ahb) {
+        out[0] = LORIE_AHARDWAREBUFFER_SOCKET_FD;
+        out[1] = DRM_FORMAT_MOD_LINEAR;
+    } else {
+        out[0] = DRM_FORMAT_MOD_LINEAR;
+    }
+    *num_modifiers = count;
+    *modifiers = out;
     return TRUE;
 }
 
