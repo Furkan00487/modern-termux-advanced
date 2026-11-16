@@ -143,4 +143,19 @@ public class TermuxX11IntegrationTest {
         assertTrue(profile.contains("MESA_LOADER_DRIVER_OVERRIDE=zink"));
         assertTrue(profile.contains(".lorie_hwaccel"));
     }
+
+    @Test
+    public void testAppendHardwareAccelArgsSyncsDisableGpuPresentFlag() {
+        String[] base = new String[] {":0"};
+        assertArrayEquals(base, CmdEntryPoint.appendHardwareAccelArgs(base, true));
+
+        String[] disabled = CmdEntryPoint.appendHardwareAccelArgs(base, false);
+        assertArrayEquals(new String[] {":0", "-disable-gpu-present"}, disabled);
+
+        // Should not duplicate if already specified on CLI
+        assertArrayEquals(disabled, CmdEntryPoint.appendHardwareAccelArgs(disabled, false));
+
+        // Should tolerate null input
+        assertArrayEquals(new String[] {"-disable-gpu-present"}, CmdEntryPoint.appendHardwareAccelArgs(null, false));
+    }
 }

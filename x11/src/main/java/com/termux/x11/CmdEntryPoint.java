@@ -24,9 +24,13 @@ import androidx.annotation.Keep;
 
 import dalvik.annotation.optimization.CriticalNative;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Arrays;
 
 @Keep @SuppressLint({"StaticFieldLeak", "UnsafeDynamicallyLoadedCode"})
 public class CmdEntryPoint extends ICmdEntryInterface.Stub {
@@ -34,6 +38,7 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     public static final String EXTRA_DOCUMENT_TAG = "document_tag";
     static final Handler handler;
     public static Context ctx;
+    private static boolean hardwareAccelerationEnabled = true;
     private final Intent intent = createIntent();
     private boolean broadcastPending;
 
@@ -44,8 +49,9 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
      */
     public static void main(String[] args) {
         initEntryPoint();
+        final String[] effectiveArgs = appendHardwareAccelArgs(args, hardwareAccelerationEnabled);
         android.util.Log.i("CmdEntryPoint", "commit " + BuildConfig.COMMIT);
-        handler.post(() -> new CmdEntryPoint(args));
+        handler.post(() -> new CmdEntryPoint(effectiveArgs));
         Looper.loop();
     }
 
@@ -203,12 +209,39 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
         return resourceLibPath;
     }
 
+    public static String[] appendHardwareAccelArgs(String[] args, boolean hwAccelEnabled) {
+        String[] baseArgs = args != null ? args : new String[0];
+        if (hwAccelEnabled) {
+            return baseArgs;
+        }
+        for (String arg : baseArgs) {
+            if ("-disable-gpu-present".equals(arg)) {
+                return baseArgs;
+            }
+        }
+        String[] updated = Arrays.copyOf(baseArgs, baseArgs.length + 1);
+        updated[baseArgs.length] = "-disable-gpu-present";
+        return updated;
+    }
+
     private static void initEntryPoint() {
         ctx = createContext();
+        hardwareAccelerationEnabled = true;
         if (ctx != null) {
             try {
                 android.content.SharedPreferences p = ctx.getSharedPreferences(LorieApp.X11_PREFS_NAME, Context.MODE_PRIVATE);
-                LoriePreferences.syncHardwareAccelerationFlag(p.getBoolean("hardwareAcceleration", true));
+                hardwareAccelerationEnabled = p.getBoolean("hardwareAcceleration", true);
+                LoriePreferences.syncHardwareAccelerationFlag(hardwareAccelerationEnabled);
+            } catch (Exception ignored) {}
+        } else {
+            try {
+                File flag = new File(LoriePreferences.HW_ACCEL_FLAG_PATH);
+                if (flag.exists()) {
+                    String val = new String(Files.readAllBytes(flag.toPath()), StandardCharsets.UTF_8).trim();
+                    if ("0".equals(val)) {
+                        hardwareAccelerationEnabled = false;
+                    }
+                }
             } catch (Exception ignored) {}
         }
 
