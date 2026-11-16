@@ -132,6 +132,9 @@ public class TermuxX11IntegrationTest {
         assertTrue(script.contains("GALLIUM_DRIVER=zink"));
         assertTrue(script.contains("MESA_LOADER_DRIVER_OVERRIDE=zink"));
         assertTrue(script.contains("/system/lib64/libvulkan.so"));
+        assertTrue(script.contains("/dev/kgsl-3d0"));
+        assertTrue(script.contains("LIBGL_DRI3_ENABLE=1"));
+        assertTrue(script.contains("TERMUX_X11_AHB_DRI3=1"));
         assertTrue(script.contains(".lorie_hwaccel"));
         assertTrue(script.contains("llvmpipe"));
     }
@@ -141,7 +144,27 @@ public class TermuxX11IntegrationTest {
         String profile = TermuxInstaller.getModernTermuxX11ProfileContent();
         assertTrue(profile.contains("GALLIUM_DRIVER=zink"));
         assertTrue(profile.contains("MESA_LOADER_DRIVER_OVERRIDE=zink"));
+        assertTrue(profile.contains("/dev/kgsl-3d0"));
+        assertTrue(profile.contains("LIBGL_DRI3_ENABLE=1"));
+        assertTrue(profile.contains("TERMUX_X11_AHB_DRI3=1"));
         assertTrue(profile.contains(".lorie_hwaccel"));
+    }
+
+    @Test
+    public void testEnsureHardwareAccelFlagSeededRespectsExistingPreference() throws Exception {
+        File tempDir = java.nio.file.Files.createTempDirectory("hwaccel_seed_test").toFile();
+        tempDir.deleteOnExit();
+        File flagFile = new File(tempDir, "tmp/.lorie_hwaccel");
+
+        // Seeds "1\n" when absent
+        TermuxInstaller.ensureHardwareAccelFlagSeeded(flagFile);
+        assertTrue(flagFile.exists());
+        assertEquals("1\n", new String(java.nio.file.Files.readAllBytes(flagFile.toPath()), java.nio.charset.StandardCharsets.UTF_8));
+
+        // Preserves existing "0\n" preference without overwriting
+        java.nio.file.Files.write(flagFile.toPath(), "0\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        TermuxInstaller.ensureHardwareAccelFlagSeeded(flagFile);
+        assertEquals("0\n", new String(java.nio.file.Files.readAllBytes(flagFile.toPath()), java.nio.charset.StandardCharsets.UTF_8));
     }
 
     @Test

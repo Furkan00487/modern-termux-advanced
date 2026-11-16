@@ -308,12 +308,15 @@ final class TermuxInstaller {
             "  export GALLIUM_DRIVER=zink\n" +
             "  export MESA_LOADER_DRIVER_OVERRIDE=zink\n" +
             "  export LIBGL_ALWAYS_SOFTWARE=0\n" +
-            "  if [ -f /data/data/com.termux/files/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json ]; then\n" +
+            "  export LIBGL_DRI3_ENABLE=1\n" +
+            "  export TERMUX_X11_AHB_DRI3=1\n" +
+            "  if [ -e /dev/kgsl-3d0 ] && [ -f /data/data/com.termux/files/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json ]; then\n" +
             "    export VK_ICD_FILENAMES=/data/data/com.termux/files/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json\n" +
             "  fi\n" +
             "else\n" +
             "  export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe\n" +
             "  export LIBGL_ALWAYS_SOFTWARE=1\n" +
+            "  unset TERMUX_X11_AHB_DRI3\n" +
             "fi\n\n" +
             "if [ $# -gt 0 ]; then\n" +
             "  exec \"$@\"\n" +
@@ -332,8 +335,27 @@ final class TermuxInstaller {
             "    export GALLIUM_DRIVER=zink\n" +
             "    export MESA_LOADER_DRIVER_OVERRIDE=zink\n" +
             "    export LIBGL_ALWAYS_SOFTWARE=0\n" +
+            "    export LIBGL_DRI3_ENABLE=1\n" +
+            "    export TERMUX_X11_AHB_DRI3=1\n" +
+            "    if [ -e /dev/kgsl-3d0 ] && [ -f /data/data/com.termux/files/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json ]; then\n" +
+            "      export VK_ICD_FILENAMES=/data/data/com.termux/files/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json\n" +
+            "    fi\n" +
             "  fi\n" +
             "fi\n";
+    }
+
+    static void ensureHardwareAccelFlagSeeded(File flagFile) {
+        if (flagFile == null || flagFile.exists()) return;
+        try {
+            File parent = flagFile.getParentFile();
+            if (parent != null && !parent.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                parent.mkdirs();
+            }
+            try (FileOutputStream fos = new FileOutputStream(flagFile)) {
+                fos.write("1\n".getBytes(StandardCharsets.UTF_8));
+            }
+        } catch (Exception ignored) {}
     }
 
     static void ensureTermuxX11FilesExist(Context context) {
@@ -373,6 +395,8 @@ final class TermuxInstaller {
             }
             //noinspection OctalInteger
             Os.chmod(x11ProfileScript.getAbsolutePath(), 0644);
+
+            ensureHardwareAccelFlagSeeded(new File(TERMUX_PREFIX_DIR, "tmp/.lorie_hwaccel"));
 
             if (context != null && context.getApplicationInfo() != null) {
                 File libexecDir = new File(TERMUX_PREFIX_DIR, "libexec/termux-x11");
