@@ -3,7 +3,7 @@
 [![Release](https://img.shields.io/github/v/release/Furkan00487/modern-termux?label=release&color=00E5FF)](https://github.com/Furkan00487/modern-termux/releases/latest)
 [![Release Build](https://github.com/Furkan00487/modern-termux/actions/workflows/release_build.yml/badge.svg)](https://github.com/Furkan00487/modern-termux/actions/workflows/release_build.yml)
 [![Unit tests](https://github.com/Furkan00487/modern-termux/actions/workflows/run_tests.yml/badge.svg)](https://github.com/Furkan00487/modern-termux/actions/workflows/run_tests.yml)
-[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+[![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
 🌐 **[English](README.md)** | **[Türkçe](README.tr.md)**
 
@@ -320,6 +320,11 @@ adb logcat -s "termux:*"
 
 ## License
 
-Modern Termux is licensed under the [GNU General Public License v3.0](LICENSE).
+Copyright (c) 2026 Furkan00487 (modifications and original contributions). Upstream work is copyright the [Termux](https://github.com/termux/termux-app) contributors.
+
+Modern Termux is licensed under the [GNU General Public License v3.0 only (`GPL-3.0-only`)](LICENSE).
+- Modification history, upstream provenance, and Corresponding Source notices (GPLv3 §5(a) & §6) are documented in [`NOTICE`](NOTICE).
+- Integrated X11 display server in [`x11/`](x11/NOTICE) is derived from [termux/termux-x11](https://github.com/termux/termux-x11) (`GPL-3.0-only`); see [`x11/NOTICE`](x11/NOTICE) for upstream attribution, modification history, and third-party component notices (including `lorie/shm`).
+- Corresponding Source for the GPL-licensed packages inside the bundled Termux bootstrap archives (and `mksh` where bundled) is available from [termux/termux-packages](https://github.com/termux/termux-packages) for the bootstrap release version used at build time (see [`NOTICE`](NOTICE)).
 - Upstream terminal emulation libraries from [Terminal Emulator for Android](https://github.com/jackpal/Android-Terminal-Emulator) are licensed under Apache 2.0. See `terminal-view` and `terminal-emulator`.
 - Additional notices can be found in `termux-shared/LICENSE.md`.

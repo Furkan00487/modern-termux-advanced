@@ -1,0 +1,37 @@
+# NOTICE — `x11` Module (Integrated Termux:X11)
+
+Upstream repository: https://github.com/termux/termux-x11
+License: GNU General Public License v3.0 only (`GPL-3.0-only`; see root `LICENSE`)
+Upstream authors: Termux:X11 contributors
+
+## Modification Notice (GPLv3 §5(a))
+This `x11/` module is adapted from `termux/termux-x11` for direct integration
+inside this repository, with modifications introduced between **2026-10-20**
+and **2026-11-15**, including:
+
+- In-app Gradle subproject integration (`x11/build.gradle`) and IPC/activity
+  wiring inside the main app package.
+- Removal of the periodic 200 ms `serverWatchdog` polling thread in favor of
+  event-driven `onActivityResumed` / `onActivityPaused` lifecycle hooks.
+- Dynamic foreground notification state synchronization (`X_` / `>_`).
+- Wake-lock / keep-screen-awake handling on X11 `ScreenSaverSuspend` / reset.
+- `hardwareAcceleration` preference wiring and `termux-x11-env` runtime environment setup.
+
+## Third-Party Components and Submodules
+The `x11/` module includes and builds the following third-party components
+(all existing copyright and license headers are preserved in-tree):
+
+- `x11/src/main/cpp/lorie/shm` (`android-shmem` / `libandroid-shmem`): BSD-3-Clause
+  (`Copyright (c) 2013, Sergii Pylypenko`; `Copyright (c) 2017, Fredrik Fornwall`;
+  see `x11/src/main/cpp/lorie/shm/LICENSE`).
+- `x11/src/main/cpp/lorie/InitInput.c`: MIT/X11 (`Copyright 1993, 1998 The Open Group`).
+- `x11/src/main/cpp/lorie/InputXKB.c`, `x11/src/main/cpp/lorie/clipboard.c`:
+  GPL-2.0-or-later (`TightVNC Team`, `Red Hat, Inc.`, `Pierre Ossman for Cendio AB`).
+- Git submodules configured in `.gitmodules` under `x11/src/main/cpp/` (see
+  each submodule's own `COPYING` / `LICENSE` file):
+  - X.Org components (MIT / X11): `xserver`, `libx11`, `libxau`, `libxdmcp`,
+    `libxfont`, `libfontenc`, `libxkbfile`, `libxshmfence`, `libxtrans`,
+    `libxcvt`, `xorgproto`, `xkbcomp`, `pixman`
+  - `libepoxy` (MIT): `https://github.com/anholt/libepoxy`
+  - `libtirpc` (BSD-3-Clause): `https://github.com/alisw/libtirpc`
+  - `bzip2` (BSD-style bzip2 license): `https://gitlab.com/bzip2/bzip2.git`

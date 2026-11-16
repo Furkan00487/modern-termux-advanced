@@ -1,0 +1,49 @@
+# NOTICE
+
+Copyright (c) 2026 Furkan00487 (original contributions and modifications)
+Upstream Termux Project: https://github.com/termux/termux-app
+
+## License
+This repository is licensed under the GNU General Public License v3.0 only
+(`GPL-3.0-only`; see the root `LICENSE` file), subject to the per-module
+licenses and exceptions noted below and in `termux-shared/LICENSE.md`:
+
+- `terminal-emulator` and `terminal-view`: derived from Terminal Emulator for
+  Android (Apache License 2.0).
+- `termux-shared`: MIT License with GPL-3.0-only, GPL-2.0-only with Classpath
+  exception, and Apache-2.0 components as detailed in `termux-shared/LICENSE.md`.
+
+## Modification Notice (GPLv3 §5(a))
+**Modern Termux Advanced** (`Furkan00487/modern-termux-advanced`) is a modified
+fork of [termux/termux-app](https://github.com/termux/termux-app) and
+`Furkan00487/modern-termux` with integrated Termux:X11 support
+([termux/termux-x11](https://github.com/termux/termux-x11)).
+
+Because the repository history starts on **2026-10-20** without importing the
+full upstream git commit history, this `NOTICE` documents the upstream origin
+and modifications:
+
+- **Upstream base:** `termux/termux-app` (`v0.118.0`, `versionCode 118`),
+  forked and modified starting **2026-10-20**.
+- **Summary of modifications (`2026-10-20` – `2026-11-16`):**
+  - `2026-10-20` – `2026-10-28`: compileSdk/targetSdk 36 updates, custom Neon
+    Cyan theme, integrated `x11/` display server, dynamic `X_` / `>_` icon,
+    `RECORD_AUDIO` / `termux-setup-microphone`, bundled XKB archive, custom
+    MOTD, and Turkish localization.
+  - `2026-10-31` – `2026-11-15`: X11 `hardwareAcceleration` preference and
+    `termux-x11-env` environment wrapper (`v0.122.0`), multi-line paste dialog
+    & bracketed paste improvements (`v0.123.0`), and X11 `ScreenSaverSuspend`
+    keep-screen-awake support (`v0.124.0`).
+
+## Corresponding Source for Bundled Packages (GPLv3 §6)
+Release APKs built from this repository embed Termux bootstrap archives
+sourced from the upstream `termux/termux-packages` project:
+
+- `apt-android-7` variant: `bootstrap-2026.02.12-r1+apt.android-7`
+  (`bootstrap-aarch64.zip`)
+- `apt-android-5` variant (when selected): `bootstrap-2022.04.28-r6+apt-android-5`
+
+The Corresponding Source for all GPL-licensed (and other free-software)
+packages distributed inside these bootstrap archives is available at:
+https://github.com/termux/termux-packages (for the corresponding bootstrap
+release/package versions used at build time).
