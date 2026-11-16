@@ -32,6 +32,10 @@
 #include <unistd.h>
 #include "list.h"
 #include "lorie.h"
+#include "renderer_format.h"
+
+static_assert(LORIEBUFFER_AHARDWAREBUFFER == 3, "Keep renderer_format.h in sync with buffer.h");
+static_assert(AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM == 1, "Keep renderer_format.h in sync with NDK AHB format");
 
 // libEGL exports this only since API 26, weak so the library still loads below that.
 __attribute__((weak)) EGLClientBuffer eglGetNativeClientBufferANDROID(const struct AHardwareBuffer* buffer);
@@ -859,8 +863,10 @@ uint64_t Renderer::applyPendingGpuCopiesLocked() {
                 float u1 = (float) r.x2 / srcUvDivisor;
                 float v0 = (float) r.y1 / (float) srcDesc->height;
                 float v1 = (float) r.y2 / (float) srcDesc->height;
-                // Only swap channels if src/dst storage formats actually differ.
-                uint8_t needsSwizzle = LorieBuffer_isRgba(src) != LorieBuffer_isRgba(dst);
+                // Swap R/B when copying into X11 BGR-ordered root (or when src/dst formats differ).
+                uint8_t needsSwizzle = lorieShouldSwizzleGpuCopy(
+                    srcDesc->type, srcDesc->format,
+                    LorieBuffer_isRgba(src), LorieBuffer_isRgba(dst));
                 log("rendererApplyPendingGpuCopies: rect (%d,%d)-(%d,%d) off=(%d,%d) -> ndc=(%.3f,%.3f)-(%.3f,%.3f) uv=(%.3f,%.3f)-(%.3f,%.3f) srcTex=%u dstTex=%u swizzle=%d\n",
                     r.x1, r.y1, r.x2, r.y2, entry.xOff, entry.yOff, x0, y0, x1, y1, u0, v0, u1, v1,
                     LorieBuffer_getGLTextureId(src), LorieBuffer_getGLTextureId(dst), needsSwizzle);

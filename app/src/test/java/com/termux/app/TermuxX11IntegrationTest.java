@@ -202,4 +202,19 @@ public class TermuxX11IntegrationTest {
         assertTrue(content.contains("DRM_FORMAT_ABGR8888"));
         assertTrue(content.contains("DRM_FORMAT_XBGR8888"));
     }
+
+    @Test
+    public void testRendererUsesAhbDri3RbSwizzleHelper() throws Exception {
+        File renderer = new File("../x11/src/main/cpp/lorie/renderer.cpp");
+        if (!renderer.exists()) renderer = new File("x11/src/main/cpp/lorie/renderer.cpp");
+        assertTrue("renderer.cpp exists", renderer.exists());
+        String rendererSrc = new String(java.nio.file.Files.readAllBytes(renderer.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(rendererSrc.contains("lorieShouldSwizzleGpuCopy"));
+
+        File helper = new File("../x11/src/main/cpp/lorie/renderer_format.h");
+        if (!helper.exists()) helper = new File("x11/src/main/cpp/lorie/renderer_format.h");
+        assertTrue("renderer_format.h exists", helper.exists());
+        String helperSrc = new String(java.nio.file.Files.readAllBytes(helper.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(helperSrc.contains("AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM"));
+    }
 }
