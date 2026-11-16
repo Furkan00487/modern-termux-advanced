@@ -11,6 +11,12 @@
     <uses-feature
         android:name="android.software.leanback"
         android:required="false" />
+    <uses-feature
+        android:name="android.hardware.vulkan.level"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.vulkan.version"
+        android:required="false" />
 
     <permission
         android:name="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND"
@@ -43,6 +49,7 @@
         android:name=".app.TermuxApplication"
         android:allowBackup="false"
         android:banner="@drawable/banner"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/application_name"
         android:requestLegacyExternalStorage="true"

@@ -181,4 +181,25 @@ public class TermuxX11IntegrationTest {
         // Should tolerate null input
         assertArrayEquals(new String[] {"-disable-gpu-present"}, CmdEntryPoint.appendHardwareAccelArgs(null, false));
     }
+
+    @Test
+    public void testManifestDeclaresOptionalVulkanAndHardwareAcceleration() throws Exception {
+        File manifest = new File("src/main/AndroidManifest.xml");
+        if (!manifest.exists()) manifest = new File("app/src/main/AndroidManifest.xml");
+        assertTrue("AndroidManifest.xml exists", manifest.exists());
+        String content = new String(java.nio.file.Files.readAllBytes(manifest.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(content.contains("android.hardware.vulkan.level"));
+        assertTrue(content.contains("android.hardware.vulkan.version"));
+        assertTrue(content.contains("android:hardwareAccelerated=\"true\""));
+    }
+
+    @Test
+    public void testXserverCmakeDefinesAbgrFourccForAhbDri3() throws Exception {
+        File cmake = new File("../x11/src/main/cpp/recipes/xserver.cmake");
+        if (!cmake.exists()) cmake = new File("x11/src/main/cpp/recipes/xserver.cmake");
+        assertTrue("xserver.cmake exists", cmake.exists());
+        String content = new String(java.nio.file.Files.readAllBytes(cmake.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(content.contains("DRM_FORMAT_ABGR8888"));
+        assertTrue(content.contains("DRM_FORMAT_XBGR8888"));
+    }
 }

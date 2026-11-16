@@ -1,8 +1,8 @@
-# Modern Termux
+# Modern Termux Advanced
 
-[![Sürüm](https://img.shields.io/github/v/release/Furkan00487/modern-termux?label=s%C3%BCr%C3%BCm&color=00E5FF)](https://github.com/Furkan00487/modern-termux/releases/latest)
-[![Release Derleme](https://github.com/Furkan00487/modern-termux/actions/workflows/release_build.yml/badge.svg)](https://github.com/Furkan00487/modern-termux/actions/workflows/release_build.yml)
-[![Birim Testleri](https://github.com/Furkan00487/modern-termux/actions/workflows/run_tests.yml/badge.svg)](https://github.com/Furkan00487/modern-termux/actions/workflows/run_tests.yml)
+[![Sürüm](https://img.shields.io/github/v/release/Furkan00487/modern-termux-advanced?label=s%C3%BCr%C3%BCm&color=00E5FF)](https://github.com/Furkan00487/modern-termux-advanced/releases/latest)
+[![Release Derleme](https://github.com/Furkan00487/modern-termux-advanced/actions/workflows/release_build.yml/badge.svg)](https://github.com/Furkan00487/modern-termux-advanced/actions/workflows/release_build.yml)
+[![Birim Testleri](https://github.com/Furkan00487/modern-termux-advanced/actions/workflows/run_tests.yml/badge.svg)](https://github.com/Furkan00487/modern-termux-advanced/actions/workflows/run_tests.yml)
 [![Lisans: GPL-3.0-only](https://img.shields.io/badge/lisans-GPL--3.0--only-blue.svg)](LICENSE)
 
 🌐 **[English](README.md)** | **[Türkçe](README.tr.md)**
@@ -53,7 +53,7 @@
 ## Temel Özellikler
 
 - **Dahili X11 Ekran Sunucusu:** Termux:X11 motoru doğrudan uygulamanın içerisine gömülmüştür. Yan uygulama kurma, izin karmaşası veya imza uyuşmazlığı yaşanmaz.
-- **Dahili GPU Donanım Hızlandırma Desteği:** X11 Tercihlerinde varsayılan olarak açık gelen GPU köprüsü ile uygulamalar (Firefox, Chromium, 3D oyunlar, Blender, MPV) telefonun yerel Mali/Adreno GPU'sundan (Vulkan/Zink) tam performans alır.
+- **Dahili GPU Donanım Hızlandırma Desteği:** X11 Tercihlerinde varsayılan olarak açık gelen GPU desteği ile X11 DRI3/Present `AHardwareBuffer` (`ABGR8888`/`ARGB8888`, modifier `1255`) sıfır-kopya tampon aktarımı sunulur; doğrudan Mali/Adreno Vulkan istemcileri ve donanıma uyumlu Mesa Zink OpenGL köprüsü tam performansla çalışır.
 - **Dinamik Bildirim Çubuğu Simgesi:** Kalıcı servis bildirimi mevcut çalışma alanınızı gösterir: X11 ekranı aktifken Neon Cyan `X_`, terminal oturumlarında ise Neon Cyan `>_` simgesi görüntülenir.
 - **Pil Dostu Olay Güdümlü Yaşam Döngüsü:** Termux:X11'deki işlemciyi yoran 200 milisaniyelik `serverWatchdog` yoklama döngüsü tamamen kaldırılmıştır. `onActivityResumed` ve `onActivityPaused` yaşam döngüsüyle sıfır ek yükle çalışır.
 - **Kullanıma Hazır Ses ve Mikrofon:** Uygulama `RECORD_AUDIO` iznine sahiptir; ses kaydı ve çalma işlemleri için `termux-setup-microphone` komutu dahili olarak sunulur.

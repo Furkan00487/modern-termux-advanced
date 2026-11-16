@@ -1,8 +1,8 @@
-# Modern Termux
+# Modern Termux Advanced
 
-[![Release](https://img.shields.io/github/v/release/Furkan00487/modern-termux?label=release&color=00E5FF)](https://github.com/Furkan00487/modern-termux/releases/latest)
-[![Release Build](https://github.com/Furkan00487/modern-termux/actions/workflows/release_build.yml/badge.svg)](https://github.com/Furkan00487/modern-termux/actions/workflows/release_build.yml)
-[![Unit tests](https://github.com/Furkan00487/modern-termux/actions/workflows/run_tests.yml/badge.svg)](https://github.com/Furkan00487/modern-termux/actions/workflows/run_tests.yml)
+[![Release](https://img.shields.io/github/v/release/Furkan00487/modern-termux-advanced?label=release&color=00E5FF)](https://github.com/Furkan00487/modern-termux-advanced/releases/latest)
+[![Release Build](https://github.com/Furkan00487/modern-termux-advanced/actions/workflows/release_build.yml/badge.svg)](https://github.com/Furkan00487/modern-termux-advanced/actions/workflows/release_build.yml)
+[![Unit tests](https://github.com/Furkan00487/modern-termux-advanced/actions/workflows/run_tests.yml/badge.svg)](https://github.com/Furkan00487/modern-termux-advanced/actions/workflows/run_tests.yml)
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
 🌐 **[English](README.md)** | **[Türkçe](README.tr.md)**
@@ -53,7 +53,7 @@
 ## Key Features
 
 - **Integrated X11 display server:** The complete Termux:X11 display server is built into the application package. No companion APKs or signature mismatch headaches.
-- **Out-of-the-box GPU Hardware Acceleration:** Built-in hardware acceleration preference enabled by default, bridging X11 clients (Firefox, Chromium, 3D games, Blender, MPV) to device GPU via Mesa Zink and Vulkan.
+- **Out-of-the-box GPU Hardware Acceleration:** Built-in hardware acceleration preference enabled by default, supporting X11 DRI3/Present `AHardwareBuffer` zero-copy buffer import (`ABGR8888`/`ARGB8888`, modifier `1255`) for direct Mali/Adreno Vulkan clients as well as vendor-aware Mesa Zink OpenGL bridging.
 - **Dynamic status bar icon:** The persistent foreground notification icon dynamically reflects current activity: Neon Cyan `X_` while the X11 screen is active, and `>_` when in terminal sessions.
 - **Battery-friendly event-driven lifecycle:** The legacy 200 ms `serverWatchdog` polling thread has been completely removed. State changes hook into `onActivityResumed` and `onActivityPaused` with zero continuous CPU wakeups.
 - **Audio and microphone ready:** Includes the Android `RECORD_AUDIO` permission out of the box and bundles `termux-setup-microphone` to request runtime audio permissions instantly.
