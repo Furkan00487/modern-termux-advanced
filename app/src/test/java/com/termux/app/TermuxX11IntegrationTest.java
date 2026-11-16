@@ -217,4 +217,20 @@ public class TermuxX11IntegrationTest {
         String helperSrc = new String(java.nio.file.Files.readAllBytes(helper.toPath()), java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(helperSrc.contains("AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM"));
     }
+
+    @Test
+    public void testInitOutputUsesDri3FlipAndCpuFallbackSafetyHelpers() throws Exception {
+        File initOutput = new File("../x11/src/main/cpp/lorie/InitOutput.c");
+        if (!initOutput.exists()) initOutput = new File("x11/src/main/cpp/lorie/InitOutput.c");
+        assertTrue("InitOutput.c exists", initOutput.exists());
+        String initSrc = new String(java.nio.file.Files.readAllBytes(initOutput.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(initSrc.contains("lorieCanFlipBuffer"));
+        assertTrue(initSrc.contains("lorieResolveCpuAccessPointer"));
+
+        File safetyHeader = new File("../x11/src/main/cpp/lorie/dri3_safety.h");
+        if (!safetyHeader.exists()) safetyHeader = new File("x11/src/main/cpp/lorie/dri3_safety.h");
+        assertTrue("dri3_safety.h exists", safetyHeader.exists());
+        String safetySrc = new String(java.nio.file.Files.readAllBytes(safetyHeader.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(safetySrc.contains("gpuOnly"));
+    }
 }

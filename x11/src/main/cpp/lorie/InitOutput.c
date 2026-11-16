@@ -42,6 +42,13 @@
 #include "opaque.h"
 
 #include "lorie.h"
+#include "dri3_safety.h"
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+_Static_assert(LORIEBUFFER_FD == 2, "Keep dri3_safety.h in sync with LORIEBUFFER_FD");
+_Static_assert(LORIEBUFFER_AHARDWAREBUFFER == 3, "Keep dri3_safety.h in sync with LORIEBUFFER_AHARDWAREBUFFER");
+_Static_assert(AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM == 1, "Keep dri3_safety.h in sync with AHB R8G8B8A8_UNORM");
+#endif
 
 #define DRM_FORMAT_MOD_LINEAR 0
 #define LORIE_AHARDWAREBUFFER_SOCKET_FD 1255
@@ -120,6 +127,7 @@ typedef struct {
     bool flipped, wasLocked, imported, gpuOnly;
     void *locked;
     void *mem;
+    void *cpuFallback;
 } LoriePixmapPriv;
 
 #define LORIE_PIXMAP_PRIV_FROM_PIXMAP(pixmap) (pixmap ? ((LoriePixmapPriv*) exaGetPixmapDriverPrivate(pixmap)) : NULL)
@@ -1128,18 +1136,18 @@ void lorieGpuCopyAck(PixmapPtr pixmap, void *dst_buffer) {
 
 Bool loriePresentFlip(__unused RRCrtcPtr crtc, __unused uint64_t event_id, __unused uint64_t target_msc, PixmapPtr pixmap, __unused Bool sync_flip) {
     LoriePixmapPriv* priv = (LoriePixmapPriv*) exaGetPixmapDriverPrivate(pixmap);
-    if (!priv || !priv->buffer || priv->mem || pvfb->root.width != pixmap->drawable.width || pvfb->root.height != pixmap->drawable.height)
+    if (!priv || !priv->buffer || priv->mem || priv->gpuOnly ||
+        pvfb->root.width != pixmap->drawable.width || pvfb->root.height != pixmap->drawable.height)
         return FALSE;
-
-    const LorieBuffer_Desc *desc = LorieBuffer_description(priv->buffer);
-    char *forceFlip = getenv("TERMUX_X11_FORCE_FLIP");
-    if (desc->type == LORIEBUFFER_FD && priv->imported && !(forceFlip && strcmp(forceFlip, "1") == 0))
-        return FALSE; // For some reason it does not work fine with turnip.
 
     // Regular buffers can not be shared to activity, we must explicitly convert LorieBuffer to FD or AHardwareBuffer
     lorieEnsureGpuSampleable(pixmap, pvfb->root.legacyDrawing ? LORIEBUFFER_FD : LORIEBUFFER_AHARDWAREBUFFER);
 
-    if (desc->type != LORIEBUFFER_FD && desc->type != LORIEBUFFER_AHARDWAREBUFFER)
+    const LorieBuffer_Desc *desc = LorieBuffer_description(priv->buffer);
+    char *forceFlip = getenv("TERMUX_X11_FORCE_FLIP");
+    if (!lorieCanFlipBuffer(true, priv->buffer != NULL, priv->mem != NULL, priv->gpuOnly, true,
+                            desc->type, desc->format, priv->imported,
+                            forceFlip && strcmp(forceFlip, "1") == 0))
         return FALSE;
 
     lorieRegisterBuffer(priv->buffer);
@@ -1210,6 +1218,7 @@ void lorieExaDestroyPixmap(__unused ScreenPtr pScreen, void *driverPriv) {
         lorieUnregisterBuffer(priv->buffer);
         LorieBuffer_release(priv->buffer);
     }
+    free(priv->cpuFallback);
     free(priv);
 }
 
@@ -1236,8 +1245,13 @@ static inline __always_inline Bool lorieKeepLockUntilRequestEnd(PixmapPtr pPix, 
 
 Bool loriePrepareAccess(PixmapPtr pPix, int index) {
     LoriePixmapPriv *priv = exaGetPixmapDriverPrivate(pPix);
-    if (lorieNeedsGpuLock(pPix, priv, index)) {
-        if (lorieKeepLockUntilRequestEnd(pPix, index))
+    if (!priv)
+        return FALSE;
+
+    Bool needsGpuLock = lorieNeedsGpuLock(pPix, priv, index);
+    Bool keepLockUntilRequestEnd = needsGpuLock && lorieKeepLockUntilRequestEnd(pPix, index);
+    if (needsGpuLock) {
+        if (keepLockUntilRequestEnd)
             lorieRequestLockTake();
         else
             lorie_mutex_lock(&pvfb->state->lock, &pvfb->state->lockingPid, conn_fd);
@@ -1246,6 +1260,21 @@ Bool loriePrepareAccess(PixmapPtr pPix, int index) {
     if (!priv->locked && !priv->mem) {
         int err = LorieBuffer_lock(priv->buffer, &priv->locked);
         if (err) {
+            // AFBC / GPU-only AHardwareBuffers reject CPU locks. Provide a zeroed scratch backing
+            // so EXA fallbacks (e.g. CopyArea/Composite) never dereference a NULL devPrivate.ptr.
+            priv->gpuOnly = true;
+            const LorieBuffer_Desc *desc = LorieBuffer_description(priv->buffer);
+            uint32_t stridePixels = (uint32_t) (desc->stride > 0 ? desc->stride : pPix->drawable.width);
+            uint32_t height = (uint32_t) (desc->height > 0 ? desc->height : pPix->drawable.height);
+            void *fallback = lorieResolveCpuAccessPointer(NULL, NULL, &priv->cpuFallback,
+                                                          stridePixels, height, calloc);
+            if (fallback) {
+                priv->wasLocked = TRUE; // Skip LorieBuffer_unlock() in lorieFinishAccess.
+                pPix->devPrivate.ptr = fallback;
+                return TRUE;
+            }
+            if (needsGpuLock && !keepLockUntilRequestEnd)
+                lorie_mutex_unlock(&pvfb->state->lock, &pvfb->state->lockingPid);
             dprintf(2, "Failed to lock buffer, err %d\n", err);
             return FALSE;
         }
