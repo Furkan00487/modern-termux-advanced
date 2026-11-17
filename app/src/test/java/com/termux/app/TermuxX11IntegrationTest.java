@@ -244,4 +244,17 @@ public class TermuxX11IntegrationTest {
         assertTrue(safetySrc.contains("lorieShouldRecordExternalMem"));
         assertTrue(safetySrc.contains("lorieNormalizeLockResult"));
     }
+
+    @Test
+    public void testXserverPatchClipsPresentGpuCopyToWindowClipList() throws Exception {
+        File patchFile = new File("../x11/src/main/cpp/patches/xserver.patch");
+        if (!patchFile.exists()) patchFile = new File("x11/src/main/cpp/patches/xserver.patch");
+        assertTrue("xserver.patch exists", patchFile.exists());
+        String patchSrc = new String(java.nio.file.Files.readAllBytes(patchFile.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        int gpuCopyIdx = patchSrc.indexOf("lorieTryScheduleGpuCopy(");
+        assertTrue("present_execute.c calls lorieTryScheduleGpuCopy", gpuCopyIdx > 0);
+        String beforeCall = patchSrc.substring(Math.max(0, gpuCopyIdx - 900), gpuCopyIdx);
+        assertTrue("GPU copy update must be clipped against &window->clipList before lorieTryScheduleGpuCopy",
+                beforeCall.contains("&window->clipList") && beforeCall.contains("gpuCopyUpdate"));
+    }
 }
