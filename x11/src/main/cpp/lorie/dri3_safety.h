@@ -67,3 +67,31 @@ static inline bool lorieShouldRecordExternalMem(bool hasPriv,
         return false;
     return true;
 }
+
+/**
+ * Returns true only if lock returned success (0) AND yielded a non-NULL CPU pointer.
+ * Guards against vendor gralloc implementations that log an AFBC lock failure yet return 0.
+ */
+static inline bool lorieLockSucceeded(int lockRet, const void *lockedPtr) {
+    return lockRet == 0 && lockedPtr != NULL;
+}
+
+/**
+ * Normalizes a buffer lock result so failed or NULL-pointer locks never mark the buffer
+ * as locked or return 0.
+ */
+static inline int lorieNormalizeLockResult(int lockRet,
+                                           void **lockedData,
+                                           int8_t *lockedFlag,
+                                           int fallbackErr) {
+    if (lorieLockSucceeded(lockRet, lockedData ? *lockedData : NULL)) {
+        if (lockedFlag)
+            *lockedFlag = 1;
+        return 0;
+    }
+    if (lockedData)
+        *lockedData = NULL;
+    if (lockedFlag)
+        *lockedFlag = 0;
+    return lockRet != 0 ? lockRet : fallbackErr;
+}

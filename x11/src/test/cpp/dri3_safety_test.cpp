@@ -94,6 +94,38 @@ void testShouldRecordExternalMemFiltersInternalSync() {
     assert(lorieShouldRecordExternalMem(true, nullptr, false, nullptr, nullptr) == false);
 }
 
+void testZeroReturnWithNullPointerCountsAsFailedLock() {
+    // Samsung gralloc4 on AFBC buffers can log an error and return 0 while leaving vaddr NULL.
+    assert(lorieLockSucceeded(0, nullptr) == false);
+    assert(lorieLockSucceeded(-1, reinterpret_cast<const void *>(0x1234)) == false);
+
+    int dummy = 42;
+    assert(lorieLockSucceeded(0, &dummy) == true);
+
+    void *lockedData = nullptr;
+    int8_t lockedFlag = 1;
+    int err = lorieNormalizeLockResult(0, &lockedData, &lockedFlag, 13 /* EACCES */);
+    assert(err == 13);
+    assert(lockedData == nullptr);
+    assert(lockedFlag == 0);
+
+    // Non-zero error with stale pointer must also clear lockedData and lockedFlag.
+    lockedData = &dummy;
+    lockedFlag = 1;
+    err = lorieNormalizeLockResult(-22, &lockedData, &lockedFlag, 13);
+    assert(err == -22);
+    assert(lockedData == nullptr);
+    assert(lockedFlag == 0);
+
+    // Only err == 0 with non-null data succeeds and marks lockedFlag = 1.
+    lockedData = &dummy;
+    lockedFlag = 0;
+    err = lorieNormalizeLockResult(0, &lockedData, &lockedFlag, 13);
+    assert(err == 0);
+    assert(lockedData == &dummy);
+    assert(lockedFlag == 1);
+}
+
 }  // namespace
 
 int main() {
@@ -103,6 +135,7 @@ int main() {
     testAllocatesAndReusesCpuFallbackForGpuOnlyAccess();
     testPrefersLockedPointerWithoutAllocatingFallback();
     testShouldRecordExternalMemFiltersInternalSync();
-    std::printf("dri3_safety_test: all 6 assertions passed\n");
+    testZeroReturnWithNullPointerCountsAsFailedLock();
+    std::printf("dri3_safety_test: all 7 assertions passed\n");
     return 0;
 }

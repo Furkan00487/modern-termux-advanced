@@ -1199,13 +1199,13 @@ void *lorieCreatePixmap(__unused ScreenPtr pScreen, int width, int height, __unu
 
     uint8_t type = usage_hint != CREATE_PIXMAP_USAGE_LORIEBUFFER_BACKED ? LORIEBUFFER_REGULAR : pvfb->root.legacyDrawing ? LORIEBUFFER_FD : LORIEBUFFER_AHARDWAREBUFFER;
     priv->buffer = LorieBuffer_allocate(width, height, AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM, type);
-    *new_fb_pitch = LorieBuffer_description(priv->buffer)->stride * 4;
-
-    LorieBuffer_lock(priv->buffer, &priv->locked);
     if (!priv->buffer) {
         free(priv);
         return NULL;
     }
+    *new_fb_pitch = LorieBuffer_description(priv->buffer)->stride * 4;
+
+    LorieBuffer_lock(priv->buffer, &priv->locked);
 
     return priv;
 }
@@ -1275,10 +1275,11 @@ Bool loriePrepareAccess(PixmapPtr pPix, int index) {
     }
 
     if (!priv->locked && !priv->mem) {
-        int err = LorieBuffer_lock(priv->buffer, &priv->locked);
-        if (err) {
-            // AFBC / GPU-only AHardwareBuffers reject CPU locks. Provide a zeroed scratch backing
-            // so EXA fallbacks (e.g. CopyArea/Composite) never dereference a NULL devPrivate.ptr.
+        int err = priv->gpuOnly ? EACCES : LorieBuffer_lock(priv->buffer, &priv->locked);
+        if (!lorieLockSucceeded(err, priv->locked)) {
+            // AFBC / GPU-only AHardwareBuffers reject CPU locks (or return 0 with NULL vaddr).
+            // Provide a zeroed scratch backing so EXA fallbacks never dereference a NULL devPrivate.ptr.
+            priv->locked = NULL;
             priv->gpuOnly = true;
             const LorieBuffer_Desc *desc = LorieBuffer_description(priv->buffer);
             uint32_t stridePixels = (uint32_t) (desc->stride > 0 ? desc->stride : pPix->drawable.width);
@@ -1292,14 +1293,25 @@ Bool loriePrepareAccess(PixmapPtr pPix, int index) {
             }
             if (needsGpuLock && !keepLockUntilRequestEnd)
                 lorie_mutex_unlock(&pvfb->state->lock, &pvfb->state->lockingPid);
-            dprintf(2, "Failed to lock buffer, err %d\n", err);
+            dprintf(2, "Failed to lock buffer, err %d\n", err ? err : EACCES);
             return FALSE;
         }
         priv->wasLocked = FALSE;
     } else
         priv->wasLocked = TRUE;
 
-    lorieSyncExaSysPtr(pPix, priv, priv->locked ?: priv->mem);
+    void *cpuPtr = lorieResolveCpuAccessPointer(priv->locked, priv->mem, &priv->cpuFallback, 0, 0, NULL);
+    if (!cpuPtr) {
+        if (!priv->wasLocked) {
+            LorieBuffer_unlock(priv->buffer);
+            priv->locked = NULL;
+        }
+        if (needsGpuLock && !keepLockUntilRequestEnd)
+            lorie_mutex_unlock(&pvfb->state->lock, &pvfb->state->lockingPid);
+        return FALSE;
+    }
+
+    lorieSyncExaSysPtr(pPix, priv, cpuPtr);
     return TRUE;
 }
 
@@ -1382,8 +1394,9 @@ static PixmapPtr loriePixmapFromFds(ScreenPtr screen, CARD8 num_fds, const int *
         check(!priv->buffer, "DRI3: LorieBuffer_wrapAHardwareBuffer failed.");
 
         void *probe = NULL;
-        priv->gpuOnly = LorieBuffer_lock(priv->buffer, &probe) != 0;
-        LorieBuffer_unlock(priv->buffer);
+        priv->gpuOnly = !lorieLockSucceeded(LorieBuffer_lock(priv->buffer, &probe), probe);
+        if (!priv->gpuOnly)
+            LorieBuffer_unlock(priv->buffer);
 
         screen->ModifyPixmapHeader(pixmap, width, height, 0, 0, desc.stride * 4, NULL);
         if (lorieServerDebugEnabled)
