@@ -124,7 +124,7 @@ static pthread_cond_t* volatile rendererCond = &rendererCondPlaceholder;
 
 typedef struct {
     LorieBuffer *buffer;
-    bool flipped, wasLocked, imported, gpuOnly;
+    bool flipped, wasLocked, imported, gpuOnly, updatingSysPtr;
     void *locked;
     void *mem;
     void *cpuFallback;
@@ -1222,11 +1222,28 @@ void lorieExaDestroyPixmap(__unused ScreenPtr pScreen, void *driverPriv) {
     free(priv);
 }
 
-Bool lorieModifyPixmapHeader(PixmapPtr pPix, __unused int w, __unused int h, __unused int depth, __unused int bitsPerbppPixel, __unused int devKind, __unused void *data) {
+Bool lorieModifyPixmapHeader(PixmapPtr pPix, __unused int w, __unused int h, __unused int depth, __unused int bitsPerbppPixel, __unused int devKind, void *data) {
     LoriePixmapPriv *priv = exaGetPixmapDriverPrivate(pPix);
-    if (priv && data)
+    if (lorieShouldRecordExternalMem(priv != NULL, data,
+                                     priv ? priv->updatingSysPtr : false,
+                                     priv ? priv->locked : NULL,
+                                     priv ? priv->cpuFallback : NULL))
         priv->mem = data;
     return FALSE;
+}
+
+static inline void lorieSyncExaSysPtr(PixmapPtr pPix, LoriePixmapPriv *priv, void *ptr) {
+    if (!ptr)
+        return;
+    ScreenPtr screen = pPix->drawable.pScreen ? pPix->drawable.pScreen : pScreenPtr;
+    if (screen && screen->ModifyPixmapHeader) {
+        // Keep EXA's ExaPixmapPriv::sys_ptr in sync because exaPrepareAccessReg_driver()
+        // overwrites pPix->devPrivate.ptr with fb_ptr/sys_ptr after PrepareAccess returns.
+        priv->updatingSysPtr = true;
+        screen->ModifyPixmapHeader(pPix, -1, -1, -1, -1, -1, ptr);
+        priv->updatingSysPtr = false;
+    }
+    pPix->devPrivate.ptr = ptr;
 }
 
 // Whether a CPU access to pPix could race a GPU write from the renderer, and so needs state->lock.
@@ -1270,7 +1287,7 @@ Bool loriePrepareAccess(PixmapPtr pPix, int index) {
                                                           stridePixels, height, calloc);
             if (fallback) {
                 priv->wasLocked = TRUE; // Skip LorieBuffer_unlock() in lorieFinishAccess.
-                pPix->devPrivate.ptr = fallback;
+                lorieSyncExaSysPtr(pPix, priv, fallback);
                 return TRUE;
             }
             if (needsGpuLock && !keepLockUntilRequestEnd)
@@ -1282,12 +1299,14 @@ Bool loriePrepareAccess(PixmapPtr pPix, int index) {
     } else
         priv->wasLocked = TRUE;
 
-    pPix->devPrivate.ptr = priv->locked ?: priv->mem;
+    lorieSyncExaSysPtr(pPix, priv, priv->locked ?: priv->mem);
     return TRUE;
 }
 
 void lorieFinishAccess(PixmapPtr pPix, int index) {
     LoriePixmapPriv *priv = exaGetPixmapDriverPrivate(pPix);
+    if (!priv)
+        return;
     if (lorieNeedsGpuLock(pPix, priv, index) && !lorieKeepLockUntilRequestEnd(pPix, index))
         lorie_mutex_unlock(&pvfb->state->lock, &pvfb->state->lockingPid);
 

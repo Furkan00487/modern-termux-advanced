@@ -226,11 +226,14 @@ public class TermuxX11IntegrationTest {
         String initSrc = new String(java.nio.file.Files.readAllBytes(initOutput.toPath()), java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(initSrc.contains("lorieCanFlipBuffer"));
         assertTrue(initSrc.contains("lorieResolveCpuAccessPointer"));
+        assertTrue(initSrc.contains("lorieShouldRecordExternalMem"));
+        assertTrue(initSrc.contains("lorieSyncExaSysPtr"));
 
         File safetyHeader = new File("../x11/src/main/cpp/lorie/dri3_safety.h");
         if (!safetyHeader.exists()) safetyHeader = new File("x11/src/main/cpp/lorie/dri3_safety.h");
         assertTrue("dri3_safety.h exists", safetyHeader.exists());
         String safetySrc = new String(java.nio.file.Files.readAllBytes(safetyHeader.toPath()), java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(safetySrc.contains("gpuOnly"));
+        assertTrue(safetySrc.contains("lorieShouldRecordExternalMem"));
     }
 }

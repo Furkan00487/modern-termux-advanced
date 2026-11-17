@@ -55,3 +55,15 @@ static inline void *lorieResolveCpuAccessPointer(void *lockedPtr,
     *fallbackPtr = allocFn((size_t) height, rowBytes);
     return *fallbackPtr;
 }
+
+static inline bool lorieShouldRecordExternalMem(bool hasPriv,
+                                                const void *data,
+                                                bool updatingSysPtr,
+                                                const void *lockedPtr,
+                                                const void *fallbackPtr) {
+    if (!hasPriv || data == NULL || updatingSysPtr)
+        return false;
+    if (data == lockedPtr || data == fallbackPtr)
+        return false;
+    return true;
+}

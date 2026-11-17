@@ -80,6 +80,20 @@ void testPrefersLockedPointerWithoutAllocatingFallback() {
     assert(gAllocCalls == 0);
 }
 
+void testShouldRecordExternalMemFiltersInternalSync() {
+    int dummyLocked = 1;
+    int dummyFallback = 2;
+    int dummyExternal = 3;
+
+    // Internal EXA sys_ptr sync must never pollute priv->mem.
+    assert(lorieShouldRecordExternalMem(true, &dummyExternal, true, &dummyLocked, &dummyFallback) == false);
+    assert(lorieShouldRecordExternalMem(true, &dummyFallback, false, &dummyLocked, &dummyFallback) == false);
+    assert(lorieShouldRecordExternalMem(true, &dummyLocked, false, &dummyLocked, &dummyFallback) == false);
+    // Genuine external scratch pixmap pointer must be recorded.
+    assert(lorieShouldRecordExternalMem(true, &dummyExternal, false, &dummyLocked, &dummyFallback) == true);
+    assert(lorieShouldRecordExternalMem(true, nullptr, false, nullptr, nullptr) == false);
+}
+
 }  // namespace
 
 int main() {
@@ -88,6 +102,7 @@ int main() {
     testAllowsInternalAhbFlip();
     testAllocatesAndReusesCpuFallbackForGpuOnlyAccess();
     testPrefersLockedPointerWithoutAllocatingFallback();
-    std::printf("dri3_safety_test: all 5 assertions passed\n");
+    testShouldRecordExternalMemFiltersInternalSync();
+    std::printf("dri3_safety_test: all 6 assertions passed\n");
     return 0;
 }
