@@ -2683,7 +2683,7 @@ public final class TerminalEmulator {
      */
     void setOscTypeVariables() {
         if (mOscType >= 0) return;
-        if (mTerminalControlArgs.indexOf(":") < 0) return;
+        if (mTerminalControlArgs.indexOf(";") < 0) return;
 
         int value = -1;
         int argsLength = mTerminalControlArgs.length();
