@@ -25,7 +25,7 @@ and modifications:
 
 - **Upstream base:** `termux/termux-app` (`v0.118.0`, `versionCode 118`),
   forked and modified starting **2026-10-20**.
-- **Summary of modifications (`2026-10-20` – `2026-11-16`):**
+- **Summary of modifications (`2026-10-20` – `2026-11-20`):**
   - `2026-10-20` – `2026-10-28`: compileSdk/targetSdk 36 updates, custom Neon
     Cyan theme, integrated `x11/` display server, dynamic `X_` / `>_` icon,
     `RECORD_AUDIO` / `termux-setup-microphone`, bundled XKB archive, custom
@@ -34,6 +34,9 @@ and modifications:
     `termux-x11-env` environment wrapper (`v0.122.0`), multi-line paste dialog
     & bracketed paste improvements (`v0.123.0`), and X11 `ScreenSaverSuspend`
     keep-screen-awake support (`v0.124.0`).
+  - `2026-11-16` – `2026-11-20`: Upstream `termux-app` & `termux-x11` sync
+    (`v0.125.0`, including Sixel/iTerm2 image support, X11 server/cursor surface
+    updates, and preserved Mali/AHB GPU copy offload & DRI3 safety).
 
 ## Corresponding Source for Bundled Packages (GPLv3 §6)
 Release APKs built from this repository embed Termux bootstrap archives
