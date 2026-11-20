@@ -74,6 +74,8 @@
     <string name="lorie_pref_transformCapturedPointer">Yakalanan işaretçi hareketlerini dönüştür</string>
     <string name="lorie_pref_capturedPointerSpeedFactor">Yakalanan işaretçi hız çarpanı, %</string>
     <string name="lorie_pref_tapToMove">Dokunmatik yüzeyler için dokun-ve-taşı özelliğini etkinleştir</string>
+    <string name="lorie_pref_invertScrolling">Kaydırma yönünü tersine çevir</string>
+    <string name="lorie_pref_invertScrolling_summary">Fare tekerleği ve dokunmatik yüzey kaydırma yönünü tersine çevirir.</string>
     <string name="lorie_pref_ignoreGamepadEvents">Oyun kolu (gamepad) giriş olaylarını yok say</string>
     <string name="lorie_pref_ignoreGamepadEvents_summary">Oyun kolu ve joystick olaylarının X sunucusuna iletilmesini engelle</string>
     <string name="lorie_pref_zoomFollowsCursor">Yakınlaştırılmışken imleci takip etmek için ekranı kaydır</string>

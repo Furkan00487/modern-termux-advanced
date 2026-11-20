@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
+import android.os.RemoteException;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
@@ -43,6 +44,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.PointerIcon;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
@@ -110,7 +112,9 @@ public class MainActivity extends AppCompatActivity {
     private String screenIdleTimeoutArmedMode = null; // numeric screenIdleTimeout mode the pending idle check reflects, or null if none pending
     private boolean x11SleepInhibited = false;
     private final Runnable screenIdleTimeoutCheck = this::checkScreenIdleTimeout;
+    private static final long SERVER_HEARTBEAT_TIMEOUT_MS = 3000;
     @Keep private long lastServerHeartbeat; // Kept for JNI activity.cpp compatibility
+    private boolean surfacePending = false;
     /** Aspect ratios outside of the range the device is configured with are rejected by the system. */
     private static final float MIN_PIP_ASPECT_RATIO = getSystemDimenFloat("config_pictureInPictureMinAspectRatio", 1.f / 2.39f);
     private static final float MAX_PIP_ASPECT_RATIO = getSystemDimenFloat("config_pictureInPictureMaxAspectRatio", 2.39f);
@@ -720,6 +724,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /** The X server draws into the surface itself. */
+    void windowChanged(Surface surface) {
+        // The call waits for the server to take the surface, which a stalled one never does.
+        boolean stalled = serverStalled();
+        if (stalled)
+            surfacePending = true;
+        if (service == null || stalled)
+            return;
+
+        surfacePending = false;
+        try {
+            service.windowChanged(surface);
+        } catch (RemoteException e) {
+            Log.e("MainActivity", "Failed to hand the surface over to the X server", e);
+        }
+    }
+
+    void cursorWindowChanged(Surface surface) {
+        boolean stalled = serverStalled();
+        if (stalled)
+            surfacePending = true;
+        if (service == null || stalled)
+            return;
+
+        try {
+            service.cursorWindowChanged(surface);
+        } catch (RemoteException e) {
+            Log.e("MainActivity", "Failed to hand the cursor surface over to the X server", e);
+        }
+    }
+
+    private boolean serverStalled() {
+        return getLorieView().connected() && SystemClock.uptimeMillis() - lastServerHeartbeat > SERVER_HEARTBEAT_TIMEOUT_MS;
+    }
+
+    @Keep
+    void onServerHeartbeat() {
+        if (!surfacePending)
+            return;
+        runOnUiThread(() -> {
+            if (surfacePending && !serverStalled())
+                getLorieView().sendSurface();
+        });
+    }
+
     void disconnectService() {
         service = null;
 
@@ -744,9 +793,10 @@ public class MainActivity extends AppCompatActivity {
             if (fd != null) {
                 Log.v("MainActivity", "Extracting X connection socket.");
                 getLorieView().connect(fd.detachFd());
+                clientConnectedStateChanged();
+                getLorieView().sendSurface();
                 finishStartupDraw();
                 getLorieView().triggerCallback();
-                clientConnectedStateChanged();
                 getLorieView().reloadPreferences(prefs);
             } else
                 scheduleConnect();
@@ -1269,6 +1319,8 @@ public class MainActivity extends AppCompatActivity {
             if (!connected) {
                 x11SleepInhibited = false;
                 setCapturingEnabled(false);
+            } else if (mExtraKeys != null) {
+                mExtraKeys.unsetSpecialKeys();
             }
 
             // A picture-in-picture window has nothing to show without a client, and there is no way

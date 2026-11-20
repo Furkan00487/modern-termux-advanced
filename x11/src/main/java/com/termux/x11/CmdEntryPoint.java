@@ -184,6 +184,8 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     }
 
     public native boolean start(String[] args);
+    public native void windowChanged(Surface surface);
+    public native void cursorWindowChanged(Surface surface);
     public native ParcelFileDescriptor getXConnection();
     public native ParcelFileDescriptor getLogcatOutput();
     public native void reportFatalError(String message);

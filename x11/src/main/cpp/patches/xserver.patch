@@ -54,7 +54,6 @@
  /*
   * Manage a queue of sleeping clients, awakening them
   * when requested, by using the OS functions IgnoreClient
-
 +++ ./dix/enterleave.c
 @@ -1541,6 +1541,8 @@
      }
@@ -85,7 +84,10 @@
          InputThreadInit();
  
 +++ ./exa/exa_unaccel.c
-@@ -384,10 +384,10 @@
+@@ -381,16 +381,16 @@
+ 
+         exaGetDrawableDeltas(&pWin->drawable, pPixmap, &xoff, &yoff);
+         RegionTranslate(prgnSrc, xoff, yoff);
 -        pExaScr->prepare_access_reg(pPixmap, EXA_PREPARE_SRC, prgnSrc);
 +        pExaScr->prepare_access_reg(pPixmap, EXA_PREPARE_DEST, prgnSrc);
          RegionTranslate(prgnSrc, -xoff, -yoff);
@@ -93,12 +95,15 @@
      else
 -        exaPrepareAccess(pDrawable, EXA_PREPARE_SRC);
 +        exaPrepareAccess(pDrawable, EXA_PREPARE_DEST);
-
+ 
      swap(pExaScr, pScreen, CopyWindow);
      pScreen->CopyWindow(pWin, ptOldOrg, prgnSrc);
      swap(pExaScr, pScreen, CopyWindow);
 -    exaFinishAccess(pDrawable, EXA_PREPARE_SRC);
 +    exaFinishAccess(pDrawable, EXA_PREPARE_DEST);
+     EXA_POST_FALLBACK(pScreen);
+ }
+ 
 +++ ./include/os.h
 @@ -557,6 +557,10 @@
  extern _X_EXPORT void
@@ -306,7 +311,7 @@
      if (*type == 'r') {
          iop = fdopen(pdes[0], type);
          close(pdes[1]);
-@@ -1628,6 +1684,8 @@
+@@ -1641,6 +1697,8 @@
          pid = waitpid(cur->pid, &pstat, 0);
      } while (pid == -1 && errno == EINTR);
  

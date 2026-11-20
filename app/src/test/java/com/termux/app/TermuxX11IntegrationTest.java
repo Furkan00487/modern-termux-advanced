@@ -257,4 +257,58 @@ public class TermuxX11IntegrationTest {
         assertTrue("GPU copy update must be clipped against &window->clipList before lorieTryScheduleGpuCopy",
                 beforeCall.contains("&window->clipList") && beforeCall.contains("gpuCopyUpdate"));
     }
+
+    @Test
+    public void testInvertScrollingPreferenceAndStringsExist() throws Exception {
+        File prefXml = new File("../x11/src/main/res/xml/preferences.xml");
+        if (!prefXml.exists()) prefXml = new File("x11/src/main/res/xml/preferences.xml");
+        String prefContent = new String(java.nio.file.Files.readAllBytes(prefXml.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(prefContent.contains("app:key=\"invertScrolling\""));
+        assertTrue(prefContent.contains("app:defaultValue=\"false\""));
+
+        File stringsXml = new File("../x11/src/main/res/values/strings.xml");
+        if (!stringsXml.exists()) stringsXml = new File("x11/src/main/res/values/strings.xml");
+        String stringsContent = new String(java.nio.file.Files.readAllBytes(stringsXml.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(stringsContent.contains("name=\"lorie_pref_invertScrolling\""));
+        assertTrue(stringsContent.contains("name=\"lorie_pref_invertScrolling_summary\""));
+    }
+
+    @Test
+    public void testX11PreservesWatchdogFreeLifecycleAndOneShotHeartbeatFlush() throws Exception {
+        File mainActivity = new File("../x11/src/main/java/com/termux/x11/MainActivity.java");
+        if (!mainActivity.exists()) mainActivity = new File("x11/src/main/java/com/termux/x11/MainActivity.java");
+        String mainSrc = new String(java.nio.file.Files.readAllBytes(mainActivity.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertFalse(mainSrc.contains("serverWatchdog"));
+        assertFalse(mainSrc.contains("checkServerHeartbeat"));
+        assertFalse(mainSrc.contains("no_server_signal).setVisibility(stalled"));
+        assertTrue(mainSrc.contains("surfacePending"));
+        assertTrue(mainSrc.contains("onServerHeartbeat()"));
+        assertTrue(mainSrc.contains("ScreenIdlePolicy.evaluate"));
+        assertTrue(mainSrc.contains("onX11ScreenSaverReset"));
+
+        File activityCpp = new File("../x11/src/main/cpp/lorie/activity.cpp");
+        if (!activityCpp.exists()) activityCpp = new File("x11/src/main/cpp/lorie/activity.cpp");
+        String cppSrc = new String(java.nio.file.Files.readAllBytes(activityCpp.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(cppSrc.contains("MainActivity.onServerHeartbeat"));
+    }
+
+    @Test
+    public void testX11UsesSeparateCursorSurfaceAndOmitsAccessibilityService() throws Exception {
+        File aidl = new File("../x11/src/main/aidl/com/termux/x11/ICmdEntryInterface.aidl");
+        if (!aidl.exists()) aidl = new File("x11/src/main/aidl/com/termux/x11/ICmdEntryInterface.aidl");
+        String aidlSrc = new String(java.nio.file.Files.readAllBytes(aidl.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(aidlSrc.contains("windowChanged(in Surface surface)"));
+        assertTrue(aidlSrc.contains("cursorWindowChanged(in Surface surface)"));
+
+        File lorieView = new File("../x11/src/main/java/com/termux/x11/LorieView.java");
+        if (!lorieView.exists()) lorieView = new File("x11/src/main/java/com/termux/x11/LorieView.java");
+        String viewSrc = new String(java.nio.file.Files.readAllBytes(lorieView.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(viewSrc.contains("cursorView"));
+        assertTrue(viewSrc.contains("sendSurface()"));
+
+        File manifest = new File("../x11/src/main/AndroidManifest.xml");
+        if (!manifest.exists()) manifest = new File("x11/src/main/AndroidManifest.xml");
+        String manifestSrc = new String(java.nio.file.Files.readAllBytes(manifest.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertFalse(manifestSrc.contains("BIND_ACCESSIBILITY_SERVICE"));
+    }
 }

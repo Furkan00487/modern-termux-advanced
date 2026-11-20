@@ -154,6 +154,11 @@ int LorieBuffer_lock(LorieBuffer* _Nullable buffer, void* _Nullable * _Nonnull o
 int LorieBuffer_unlock(LorieBuffer* _Nullable buffer);
 
 /**
+ * Whether the buffer is locked with LorieBuffer_lock.
+ */
+bool LorieBuffer_isLocked(LorieBuffer* _Nullable buffer);
+
+/**
  * Send the AHardwareBuffer to an AF_UNIX socket.
  *
  * @param buffer
@@ -171,11 +176,17 @@ void LorieBuffer_recvHandleFromUnixSocket(int socketFd, LorieBuffer* _Nullable *
 
 /**
  * Attach buffer to GL. Must be done on GL thread.
- * After attaching subsequent call to LorieBuffer_release must be done only from GL thread.
  *
  * @param buffer the buffer to be attached.
  */
 void LorieBuffer_attachToGL(LorieBuffer* _Nullable buffer);
+
+/**
+ * Release what LorieBuffer_attachToGL created. Must be done on GL thread.
+ *
+ * @param buffer the buffer to be detached.
+ */
+void LorieBuffer_detachFromGL(LorieBuffer* _Nullable buffer);
 
 /**
  * Call glBindTexture for the buffer.
@@ -183,6 +194,15 @@ void LorieBuffer_attachToGL(LorieBuffer* _Nullable buffer);
  * @param buffer the buffer to be bound.
  */
 void LorieBuffer_bindTexture(LorieBuffer* _Nullable buffer);
+
+/**
+ * Upload rows [y1, y2) of an fd-backed buffer into its bound texture.
+ *
+ * @param buffer the buffer to be uploaded.
+ * @param y1 the first row.
+ * @param y2 the row after the last one.
+ */
+void LorieBuffer_uploadRows(LorieBuffer* _Nullable buffer, int y1, int y2);
 
 /**
  * Get the GL texture id the buffer is attached to (see LorieBuffer_attachToGL).
