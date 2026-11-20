@@ -22,7 +22,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -147,5 +146,12 @@ public class UpstreamSyncAppFixesTest {
             if (foundBitmapCell) break;
         }
         assertTrue("Expected Sixel sequence to place a TerminalBitmap cell", foundBitmapCell);
+
+        // OSC 1337 iTerm2 inline 1x1 PNG sequence should also be processed cleanly
+        String oneByOnePngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+        String osc1337 = "\033]1337;File=inline=1;width=10px;height=10px:" + oneByOnePngBase64 + "\007";
+        byte[] osc1337Bytes = osc1337.getBytes(StandardCharsets.UTF_8);
+        emulator.append(osc1337Bytes, osc1337Bytes.length);
+        assertNotNull(emulator.getScreen());
     }
 }
