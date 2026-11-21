@@ -126,6 +126,32 @@ void testZeroReturnWithNullPointerCountsAsFailedLock() {
     assert(lockedFlag == 1);
 }
 
+void testComputePixelBufferBytesPreventsIntOverflowAndBadDims() {
+    size_t bytes = 123;
+
+    // Invalid inputs must fail without modifying outBytes.
+    assert(lorieComputePixelBufferBytes(0, 1080, &bytes) == false);
+    assert(bytes == 123);
+    assert(lorieComputePixelBufferBytes(-1, 1080, &bytes) == false);
+    assert(lorieComputePixelBufferBytes(1920, 0, &bytes) == false);
+    assert(lorieComputePixelBufferBytes(1920, -4, &bytes) == false);
+    assert(lorieComputePixelBufferBytes(1920, 1080, nullptr) == false);
+
+    // Normal desktop buffer size.
+    assert(lorieComputePixelBufferBytes(1920, 1080, &bytes) == true);
+    assert(bytes == 1920u * 1080u * 4u);
+
+    // Dimensions whose product overflows 32-bit signed int (46341 * 46341 > INT32_MAX):
+    // must succeed without 32-bit UB on 64-bit size_t, and reject on 32-bit size_t.
+    bool largeOk = lorieComputePixelBufferBytes(46341, 46341, &bytes);
+    if (sizeof(size_t) >= 8) {
+        assert(largeOk == true);
+        assert(bytes == static_cast<size_t>(46341) * static_cast<size_t>(46341) * 4u);
+    } else {
+        assert(largeOk == false);
+    }
+}
+
 }  // namespace
 
 int main() {
@@ -136,6 +162,7 @@ int main() {
     testPrefersLockedPointerWithoutAllocatingFallback();
     testShouldRecordExternalMemFiltersInternalSync();
     testZeroReturnWithNullPointerCountsAsFailedLock();
-    std::printf("dri3_safety_test: all 7 assertions passed\n");
+    testComputePixelBufferBytesPreventsIntOverflowAndBadDims();
+    std::printf("dri3_safety_test: all 8 assertions passed\n");
     return 0;
 }

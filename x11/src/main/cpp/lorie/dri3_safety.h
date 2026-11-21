@@ -56,6 +56,22 @@ static inline void *lorieResolveCpuAccessPointer(void *lockedPtr,
     return *fallbackPtr;
 }
 
+/**
+ * Computes byte size (stride * height * sizeof(uint32_t)) for a 32-bpp pixel buffer
+ * in size_t arithmetic, rejecting non-positive dimensions and integer overflow.
+ */
+static inline bool lorieComputePixelBufferBytes(int32_t stride,
+                                                int32_t height,
+                                                size_t *outBytes) {
+    if (!outBytes || stride <= 0 || height <= 0)
+        return false;
+    size_t rowBytes = (size_t) stride * sizeof(uint32_t);
+    if (rowBytes / sizeof(uint32_t) != (size_t) stride || (size_t) height > SIZE_MAX / rowBytes)
+        return false;
+    *outBytes = rowBytes * (size_t) height;
+    return true;
+}
+
 static inline bool lorieShouldRecordExternalMem(bool hasPriv,
                                                 const void *data,
                                                 bool updatingSysPtr,

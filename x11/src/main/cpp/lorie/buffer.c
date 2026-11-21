@@ -86,7 +86,9 @@ static int memfd_create(const char *name, unsigned int flags) {
 }
 
 static inline size_t alignToPage(size_t size) {
-    size_t page_size = sysconf(_SC_PAGE_SIZE);
+    size_t page_size = (size_t) sysconf(_SC_PAGE_SIZE);
+    if (page_size == 0 || size > SIZE_MAX - (page_size - 1))
+        return 0;
     return (size + page_size - 1) & ~(page_size - 1);
 }
 
@@ -129,7 +131,7 @@ int LorieBuffer_createRegion(char const* name, size_t size) {
 static LorieBuffer* allocate(int32_t width, int32_t stride, int32_t height, int8_t format, int8_t type, AHardwareBuffer *buf, int fd, size_t size, off_t offset, bool takeFd) {
     AHardwareBuffer_Desc desc = {0};
     static uint64_t id = 0;
-    bool acceptable = (format == AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM || format == AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM) && width > 0 && height > 0;
+    bool acceptable = (format == AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM || format == AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM) && width > 0 && stride > 0 && height > 0;
     LorieBuffer b = { .desc = { .width = width, .stride = stride, .height = height, .format = format, .type = type, .buffer = buf, .id = id++ }, .fd = takeFd ? fd : dup(fd), .size = size, .offset = offset };
 
     if (type != LORIEBUFFER_AHARDWAREBUFFER && !acceptable)
@@ -138,11 +140,15 @@ static LorieBuffer* allocate(int32_t width, int32_t stride, int32_t height, int8
     __sync_fetch_and_add(&b.refcount, 1);
 
     switch (type) {
-        case LORIEBUFFER_REGULAR:
-            b.desc.data = calloc(1, stride * height * sizeof(uint32_t));
+        case LORIEBUFFER_REGULAR: {
+            size_t allocSize = 0;
+            if (!lorieComputePixelBufferBytes(stride, height, &allocSize))
+                return NULL;
+            b.desc.data = calloc(1, allocSize);
             if (!b.desc.data)
                 return NULL;
             break;
+        }
         case LORIEBUFFER_FD:
             if (b.fd < 0)
                 return NULL;
@@ -199,7 +205,11 @@ __LIBC_HIDDEN__ LorieBuffer* LorieBuffer_allocate(int32_t width, int32_t height,
     AHardwareBuffer *ahardwarebuffer = NULL;
 
     if (type == LORIEBUFFER_FD) {
-        size = alignToPage(width * height * sizeof(uint32_t));
+        if (!lorieComputePixelBufferBytes(width, height, &size))
+            return NULL;
+        size = alignToPage(size);
+        if (size == 0)
+            return NULL;
         fd = LorieBuffer_createRegion("LorieBuffer", size);
         if (fd < 0)
             return NULL;
@@ -217,7 +227,10 @@ __LIBC_HIDDEN__ LorieBuffer* LorieBuffer_allocate(int32_t width, int32_t height,
 }
 
 __LIBC_HIDDEN__ LorieBuffer* LorieBuffer_wrapFileDescriptor(int32_t width, int32_t stride, int32_t height, int8_t format, int fd, off_t offset) {
-    return allocate(width, stride, height, format, LORIEBUFFER_FD, NULL, fd, stride * height * sizeof(uint32_t), offset, false);
+    size_t size = 0;
+    if (!lorieComputePixelBufferBytes(stride, height, &size))
+        return NULL;
+    return allocate(width, stride, height, format, LORIEBUFFER_FD, NULL, fd, size, offset, false);
 }
 
 __LIBC_HIDDEN__ LorieBuffer* LorieBuffer_wrapAHardwareBuffer(AHardwareBuffer* buffer) {
@@ -232,7 +245,12 @@ __LIBC_HIDDEN__ void LorieBuffer_convert(LorieBuffer* buffer, int8_t type, int8_
         return;
 
     if (type == LORIEBUFFER_FD) {
-        size_t size = alignToPage(buffer->desc.stride * buffer->desc.height * sizeof(uint32_t));
+        size_t size = 0;
+        if (!lorieComputePixelBufferBytes(buffer->desc.stride, buffer->desc.height, &size))
+            return;
+        size = alignToPage(size);
+        if (size == 0)
+            return;
         int fd = LorieBuffer_createRegion("LorieBuffer", size);
         if (fd < 0)
             return;
@@ -399,9 +417,15 @@ __LIBC_HIDDEN__ void LorieBuffer_recvHandleFromUnixSocket(int socketFd, LorieBuf
     buffer.locked = false;
     buffer.lockedData = NULL;
     if (buffer.desc.type == LORIEBUFFER_FD) {
-        size_t size = buffer.desc.stride * buffer.desc.height * sizeof(uint32_t);
+        size_t size = 0;
         buffer.fd = ancil_recv_fd(socketFd);
         if (buffer.fd == -1) {
+            if (outBuffer)
+                *outBuffer = NULL;
+            return;
+        }
+        if (!lorieComputePixelBufferBytes(buffer.desc.stride, buffer.desc.height, &size)) {
+            close(buffer.fd);
             if (outBuffer)
                 *outBuffer = NULL;
             return;
