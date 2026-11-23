@@ -17,7 +17,8 @@ on:
   pull_request:
     branches: [ "master" ]
   schedule:
-    - cron: '29 3 * * 4'
+    - cron: '18 2 */3 * *'
+  workflow_dispatch:
 
 jobs:
   analyze:

@@ -5,7 +5,7 @@ updates:
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "0 6 */2 * *"
+      cronjob: "0 6 * * *"
       timezone: "Europe/Istanbul"
     open-pull-requests-limit: 10
     commit-message:
@@ -32,7 +32,7 @@ updates:
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "0 6 */2 * *"
+      cronjob: "0 6 * * *"
       timezone: "Europe/Istanbul"
     open-pull-requests-limit: 5
     commit-message:
@@ -47,7 +47,7 @@ updates:
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "0 6 */2 * *"
+      cronjob: "0 6 * * *"
       timezone: "Europe/Istanbul"
     open-pull-requests-limit: 5
     commit-message:
