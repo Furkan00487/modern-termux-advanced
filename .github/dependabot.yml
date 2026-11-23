@@ -52,3 +52,5 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "Changed"
+
+# Son Dependabot tarama tetikleme: 2026-11-23 15:01
