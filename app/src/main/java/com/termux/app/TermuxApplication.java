@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.termux.BuildConfig;
+import com.termux.api.util.ResultReturner;
 import com.termux.shared.errors.Error;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxBootstrap;
@@ -44,6 +45,8 @@ public class TermuxApplication extends LorieApp {
         // Init app wide shell manager
         TermuxShellManager shellManager = TermuxShellManager.init(context);
 
+        ResultReturner.setContext(context);
+
         // Set NightMode.APP_NIGHT_MODE
         TermuxThemeUtils.setAppNightMode(properties.getNightMode());
 
@@ -74,6 +77,7 @@ public class TermuxApplication extends LorieApp {
             TermuxShellEnvironment.writeEnvironmentToFile(this);
             TermuxInstaller.ensureTermuxX11FilesExist(this);
             TermuxInstaller.ensureTermuxMotdRefreshScriptExists();
+            TermuxInstaller.ensureTermuxClipboardFilesExist(this);
         }
     }
 

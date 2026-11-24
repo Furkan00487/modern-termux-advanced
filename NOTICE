@@ -34,6 +34,11 @@ and modifications:
     `termux-x11-env` environment wrapper (`v0.122.0`), multi-line paste dialog
     & bracketed paste improvements (`v0.123.0`), and X11 `ScreenSaverSuspend`
     keep-screen-awake support (`v0.124.0`).
+  - `2026-11-24`: Integrated single-app built-in `termux-clipboard-get` and
+    `termux-clipboard-set` support (`v0.124.8-3`) using adapted components
+    from `termux/termux-api` (GPL-3.0: `ClipboardAPI.java`, `ResultReturner.java`,
+    `TermuxApiReceiver.java`) and `termux/termux-api-package` (MIT: `termux-api.c`,
+    `termux-api.h`, `termux-api-broadcast.c`, clipboard wrapper scripts).
 
 ## Corresponding Source for Bundled Packages (GPLv3 §6)
 Release APKs built from this repository embed Termux bootstrap archives

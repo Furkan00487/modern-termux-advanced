@@ -195,6 +195,112 @@ final class TermuxInstaller {
         }
     }
 
+    static String getTermuxClipboardGetScriptContent() {
+        return "#!/bin/sh\n" +
+            "# Managed by Modern Termux built-in clipboard API\n" +
+            "set -e -u\n\n" +
+            "SCRIPTNAME=termux-clipboard-get\n" +
+            "show_usage () {\n" +
+            "    echo \"Usage: $SCRIPTNAME\"\n" +
+            "    echo \"Get the system clipboard text.\"\n" +
+            "    exit 0\n" +
+            "}\n\n" +
+            "while getopts :h option\n" +
+            "do\n" +
+            "    case \"$option\" in\n" +
+            "        h) show_usage ;;\n" +
+            "        ?) echo \"$SCRIPTNAME: illegal option -$OPTARG\" >&2; exit 1 ;;\n" +
+            "    esac\n" +
+            "done\n" +
+            "shift $((OPTIND-1))\n\n" +
+            "if [ $# != 0 ]; then echo \"$SCRIPTNAME: too many arguments\" >&2; exit 1; fi\n\n" +
+            "\"/data/data/com.termux/files/usr/libexec/termux-clipboard-api\" Clipboard\n";
+    }
+
+    static String getTermuxClipboardSetScriptContent() {
+        return "#!/bin/sh\n" +
+            "# Managed by Modern Termux built-in clipboard API\n" +
+            "set -e -u\n\n" +
+            "SCRIPTNAME=termux-clipboard-set\n" +
+            "show_usage () {\n" +
+            "    echo \"Usage: $SCRIPTNAME [text]\"\n" +
+            "    echo \"Set the system clipboard text. The text to set is read either from the arguments or from stdin.\"\n" +
+            "    exit 0\n" +
+            "}\n\n" +
+            "while getopts :h option\n" +
+            "do\n" +
+            "    case \"$option\" in\n" +
+            "        h) show_usage ;;\n" +
+            "        ?) echo \"$SCRIPTNAME: illegal option -$OPTARG\" >&2; exit 1 ;;\n" +
+            "    esac\n" +
+            "done\n" +
+            "shift $((OPTIND-1))\n\n" +
+            "CMD=\"/data/data/com.termux/files/usr/libexec/termux-clipboard-api Clipboard -e api_version 2 --ez set true\"\n" +
+            "if [ $# = 0 ]; then\n" +
+            "    $CMD\n" +
+            "else\n" +
+            "    printf '%s' \"$*\" | $CMD\n" +
+            "fi\n";
+    }
+
+    static boolean shouldWriteManagedClipboardScript(File scriptFile) {
+        if (scriptFile == null) return false;
+        if (!scriptFile.exists()) return true;
+
+        try (FileInputStream in = new FileInputStream(scriptFile)) {
+            byte[] buf = new byte[4096];
+            int total = 0;
+            int read;
+            while (total < buf.length && (read = in.read(buf, total, buf.length - total)) != -1) {
+                total += read;
+            }
+            String existing = new String(buf, 0, total, StandardCharsets.UTF_8);
+            return existing.contains("Modern Termux");
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static void writeManagedClipboardScript(File binDir, String scriptName, String content) {
+        try {
+            File scriptFile = new File(binDir, scriptName);
+            if (!shouldWriteManagedClipboardScript(scriptFile)) return;
+            try (FileOutputStream outStream = new FileOutputStream(scriptFile)) {
+                outStream.write(content.getBytes(StandardCharsets.UTF_8));
+            }
+            //noinspection OctalInteger
+            Os.chmod(scriptFile.getAbsolutePath(), 0700);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void ensureTermuxClipboardFilesExist(Context context) {
+        try {
+            if (context != null && context.getApplicationInfo() != null &&
+                    context.getApplicationInfo().nativeLibraryDir != null) {
+                File nativeBinary = new File(context.getApplicationInfo().nativeLibraryDir, "libtermux-clipboard-api.so");
+                if (nativeBinary.exists()) {
+                    File libexecDir = new File(TERMUX_PREFIX_DIR, "libexec");
+                    if (!libexecDir.exists()) {
+                        //noinspection ResultOfMethodCallIgnored
+                        libexecDir.mkdirs();
+                    }
+                    File apiSymlink = new File(libexecDir, "termux-clipboard-api");
+                    //noinspection ResultOfMethodCallIgnored
+                    apiSymlink.delete();
+                    Os.symlink(nativeBinary.getAbsolutePath(), apiSymlink.getAbsolutePath());
+                }
+            }
+
+            File binDir = TermuxConstants.TERMUX_BIN_PREFIX_DIR;
+            if (!binDir.exists() || !binDir.isDirectory()) return;
+
+            writeManagedClipboardScript(binDir, "termux-clipboard-get", getTermuxClipboardGetScriptContent());
+            writeManagedClipboardScript(binDir, "termux-clipboard-set", getTermuxClipboardSetScriptContent());
+        } catch (Exception ignored) {
+        }
+    }
+
     static String getTermuxX11ScriptContent() {
         return "#!/data/data/com.termux/files/usr/bin/bash\n" +
             "if [ ! -e /system/bin/getprop ] || [ ! -e /system/bin/app_process ]; then\n" +
@@ -523,6 +629,7 @@ final class TermuxInstaller {
                                 ensureTermuxX11FilesExist(activity);
                                 ensureModernTermuxMotdExists();
                                 ensureTermuxMotdRefreshScriptExists();
+                                ensureTermuxClipboardFilesExist(activity);
                                 SharedPreferenceUtils.setInt(sharedPreferences, TERMUX_APP.KEY_LAST_BOOTSTRAP_VERSION_CODE, currentVersionCode, true);
                             } catch (Exception e) {
                                 Logger.logStackTraceWithMessage(LOG_TAG, "Error updating bootstrap components", e);
@@ -544,6 +651,7 @@ final class TermuxInstaller {
                 ensureTermuxX11FilesExist(activity);
                 ensureModernTermuxMotdExists();
                 ensureTermuxMotdRefreshScriptExists();
+                ensureTermuxClipboardFilesExist(activity);
                 whenDone.run();
                 return;
             }
@@ -697,6 +805,7 @@ final class TermuxInstaller {
                     ensureTermuxX11FilesExist(activity);
                     ensureModernTermuxMotdExists();
                     ensureTermuxMotdRefreshScriptExists();
+                    ensureTermuxClipboardFilesExist(activity);
 
                     TermuxAppSharedPreferences preferences = TermuxAppSharedPreferences.build(activity);
                     SharedPreferences sharedPreferences = preferences != null ? preferences.getSharedPreferences() : null;

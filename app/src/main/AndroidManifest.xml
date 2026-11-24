@@ -195,6 +195,10 @@
             android:exported="false" />
 
         <receiver
+            android:name=".api.TermuxApiReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".app.event.SystemEventReceiver"
             android:exported="false">
             <intent-filter>
