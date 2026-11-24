@@ -146,6 +146,11 @@ android {
         }
     }
 
+    sourceSets {
+        debug.jniLibs.srcDir(layout.buildDirectory.dir("generated/clipboardJniLibs/debug"))
+        release.jniLibs.srcDir(layout.buildDirectory.dir("generated/clipboardJniLibs/release"))
+    }
+
     packagingOptions {
         jniLibs {
             useLegacyPackaging true
@@ -166,6 +171,53 @@ android {
 
     buildFeatures {
         buildConfig true
+    }
+}
+
+["debug", "release"].each { variantName ->
+    def variantCap = variantName.capitalize()
+    def outDir = layout.buildDirectory.dir("generated/clipboardJniLibs/${variantName}/arm64-v8a")
+    def cxxDir = layout.buildDirectory.dir("intermediates/cxx/${variantCap}")
+    def copyTask = tasks.register("package${variantCap}ClipboardExecutable") {
+        dependsOn("externalNativeBuild${variantCap}")
+        outputs.dir(outDir)
+        doLast {
+            def cxxRoot = cxxDir.get().asFile
+            java.nio.file.Path found = null
+            if (cxxRoot.exists()) {
+                def stream = java.nio.file.Files.walk(cxxRoot.toPath())
+                try {
+                    def allMatches = stream.filter { p ->
+                        p.fileName.toString() == "termux-clipboard-api" &&
+                            java.nio.file.Files.isRegularFile(p) &&
+                            p.toString().contains("/arm64-v8a/")
+                    }.collect(java.util.stream.Collectors.toList())
+                    found = allMatches.find { p -> p.toString().contains("/lib/arm64-v8a/") }
+                    if (found == null) {
+                        found = allMatches.find { p -> p.toString().contains("/obj/local/arm64-v8a/") }
+                    }
+                    if (found == null && !allMatches.isEmpty()) {
+                        found = allMatches.get(0)
+                    }
+                } finally {
+                    stream.close()
+                }
+            }
+            if (found == null) {
+                throw new GradleException("Built termux-clipboard-api executable not found under ${cxxRoot}")
+            }
+            def destDir = outDir.get().asFile
+            destDir.mkdirs()
+            def destFile = new File(destDir, "libtermux-clipboard-api.so")
+            java.nio.file.Files.copy(
+                found,
+                destFile.toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            )
+        }
+    }
+    tasks.matching { it.name == "merge${variantCap}JniLibFolders" || it.name == "merge${variantCap}NativeLibs" }.configureEach {
+        dependsOn(copyTask)
     }
 }
 
