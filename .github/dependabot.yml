@@ -12,9 +12,9 @@ updates:
       prefix: "Changed"
     ignore:
       - dependency-name: "gradle-wrapper"
-        versions: [">= 9.3.0"]
+        versions: [">= 9.6.0"]
       - dependency-name: "gradle"
-        versions: [">= 9.3.0"]
+        versions: [">= 9.6.0"]
       - dependency-name: "androidx.core:core"
         versions: [">= 1.14.0"]
       - dependency-name: "org.lsposed.hiddenapibypass:hiddenapibypass"
