@@ -57,15 +57,51 @@ public final class TerminalBuffer {
         return getSelectedText(selX1, selY1, selX2, selY2, joinBackLines, false);
     }
 
+    /**
+     * Detect whether a multi-line selection starts right after a shared visual left margin
+     * (such as CLI padding) so continuation lines do not gain spurious leading spaces.
+     */
+    private int computeSharedLeftMargin(int selX1, int selY1, int selY2) {
+        if (selX1 <= 0 || selX1 >= mColumns || selY1 >= selY2) {
+            return 0;
+        }
+        for (int row = selY1; row <= selY2; row++) {
+            // Wrapped continuation lines continue the previous logical line from column 0.
+            if (row > selY1 && getLineWrap(row - 1)) {
+                continue;
+            }
+            TerminalRow lineObject = mLines[externalToInternalRow(row)];
+            int marginEndIndex = lineObject.findStartOfColumn(selX1);
+            if (marginEndIndex < selX1) {
+                return 0;
+            }
+            char[] line = lineObject.mText;
+            for (int i = 0; i < marginEndIndex; i++) {
+                if (line[i] != ' ') {
+                    return 0;
+                }
+            }
+        }
+        return selX1;
+    }
+
     public String getSelectedText(int selX1, int selY1, int selX2, int selY2, boolean joinBackLines, boolean joinFullLines) {
         final StringBuilder builder = new StringBuilder();
         final int columns = mColumns;
 
         if (selY1 < -getActiveTranscriptRows()) selY1 = -getActiveTranscriptRows();
         if (selY2 >= mScreenRows) selY2 = mScreenRows - 1;
+        final int sharedLeftMargin = computeSharedLeftMargin(selX1, selY1, selY2);
 
         for (int row = selY1; row <= selY2; row++) {
-            int x1 = (row == selY1) ? selX1 : 0;
+            int x1;
+            if (row == selY1) {
+                x1 = selX1;
+            } else if (getLineWrap(row - 1)) {
+                x1 = 0;
+            } else {
+                x1 = sharedLeftMargin;
+            }
             int x2;
             if (row == selY2) {
                 x2 = selX2 + 1;
@@ -73,32 +109,36 @@ public final class TerminalBuffer {
             } else {
                 x2 = columns;
             }
-            TerminalRow lineObject = mLines[externalToInternalRow(row)];
-            int x1Index = lineObject.findStartOfColumn(x1);
-            int x2Index = (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
-            if (x2Index == x1Index) {
-                // Selected the start of a wide character.
-                x2Index = lineObject.findStartOfColumn(x2 + 1);
-            }
-            char[] line = lineObject.mText;
-            int lastPrintingCharIndex = -1;
-            int i;
+            boolean lineFillsWidth = false;
             boolean rowLineWrap = getLineWrap(row);
-            if (rowLineWrap && x2 == columns) {
-                // If the line was wrapped, we shouldn't lose trailing space:
-                lastPrintingCharIndex = x2Index - 1;
-            } else {
-                for (i = x1Index; i < x2Index; ++i) {
-                    char c = line[i];
-                    if (c != ' ') lastPrintingCharIndex = i;
+            if (x1 < x2) {
+                TerminalRow lineObject = mLines[externalToInternalRow(row)];
+                int x1Index = lineObject.findStartOfColumn(x1);
+                int x2Index = (x2 < mColumns) ? lineObject.findStartOfColumn(x2) : lineObject.getSpaceUsed();
+                if (x2Index == x1Index) {
+                    // Selected the start of a wide character.
+                    x2Index = lineObject.findStartOfColumn(x2 + 1);
                 }
+                char[] line = lineObject.mText;
+                int lastPrintingCharIndex = -1;
+                int i;
+                if (rowLineWrap && x2 == columns) {
+                    // If the line was wrapped, we shouldn't lose trailing space:
+                    lastPrintingCharIndex = x2Index - 1;
+                } else {
+                    for (i = x1Index; i < x2Index; ++i) {
+                        char c = line[i];
+                        if (c != ' ') lastPrintingCharIndex = i;
+                    }
+                }
+
+                int len = lastPrintingCharIndex - x1Index + 1;
+                if (lastPrintingCharIndex != -1 && len > 0)
+                    builder.append(line, x1Index, len);
+
+                lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
             }
 
-            int len = lastPrintingCharIndex - x1Index + 1;
-            if (lastPrintingCharIndex != -1 && len > 0)
-                builder.append(line, x1Index, len);
-
-            boolean lineFillsWidth = lastPrintingCharIndex == x2Index - 1;
             if ((!joinBackLines || !rowLineWrap) && (!joinFullLines || !lineFillsWidth)
                 && row < selY2 && row < mScreenRows - 1) builder.append('\n');
         }

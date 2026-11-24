@@ -62,4 +62,39 @@ public class ScreenBufferTest extends TerminalTestCase {
 		assertEquals("", mTerminal.getScreen().getWordAtLocation(1, 2));
 		assertEquals("", mTerminal.getScreen().getWordAtLocation(2, 2));
 	}
+
+	public void testGetSelectedTextTrimsSharedLeftMargin() {
+		withTerminalSized(40, 8).enterString(
+			"    #!/usr/bin/env python3\r\n" +
+			"    \"\"\"Doc\"\"\"\r\n" +
+			"\r\n" +
+			"    def foo():\r\n" +
+			"        return 1");
+		assertEquals(
+			"#!/usr/bin/env python3\n\"\"\"Doc\"\"\"\n\ndef foo():\n    return 1",
+			mTerminal.getSelectedText(4, 0, 15, 4));
+	}
+
+	public void testGetSelectedTextPreservesLinesWithoutSharedLeftMargin() {
+		withTerminalSized(20, 4).enterString("def foo():\r\n    return 1");
+		assertEquals("foo():\n    return 1", mTerminal.getSelectedText(4, 0, 11, 1));
+
+		withTerminalSized(20, 4).enterString("    def foo():\r\nif x:");
+		assertEquals("def foo():\nif x:", mTerminal.getSelectedText(4, 0, 4, 1));
+	}
+
+	public void testGetSelectedTextTrimsSharedLeftMarginWithWrappedLine() {
+		withTerminalSized(10, 5).enterString("    ABCDEFGHI\r\n    XYZ");
+		assertEquals("ABCDEFGHI\nXYZ", mTerminal.getSelectedText(4, 0, 6, 2));
+	}
+
+	public void testGetSelectedTextSharedLeftMarginWithShortLastLine() {
+		withTerminalSized(20, 4).enterString("    line1\r\n    line2");
+		assertEquals("line1\n", mTerminal.getSelectedText(4, 0, 1, 1));
+	}
+
+	public void testGetSelectedTextDoesNotTrimWideCharAtMargin() {
+		withTerminalSized(10, 3).enterString("\u4e2dA\r\n  B");
+		assertEquals("\u4e2dA\n  B", mTerminal.getSelectedText(1, 0, 2, 1));
+	}
 }
