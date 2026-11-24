@@ -57,7 +57,7 @@ jobs:
 
           APK_DIR_PATH="./app/build/outputs/apk/release"
           APK_VERSION_TAG="$RELEASE_VERSION_NAME-${{ env.PACKAGE_VARIANT }}-github-release" # Pure Release build
-          APK_BASENAME_PREFIX="termux-app_$APK_VERSION_TAG"
+          APK_BASENAME_PREFIX="termux-app-advanced_$APK_VERSION_TAG"
 
           # Used by attachment steps later
           echo "APK_DIR_PATH=$APK_DIR_PATH" >> $GITHUB_ENV
