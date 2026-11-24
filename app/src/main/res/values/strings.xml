@@ -79,6 +79,8 @@
     <string name="title_share_transcript_with">Send transcript to:</string>
 
     <string name="action_share_selected_text">Share selected text</string>
+    <string name="action_copy_selected_text_single_line">Copy as single line</string>
+    <string name="msg_copied_single_line_to_clipboard">Copied as single line</string>
     <string name="title_share_selected_text">Terminal Text</string>
     <string name="title_share_selected_text_with">Send selected text to:</string>
 
@@ -256,8 +258,9 @@
     <!-- Multi-line Paste Dialog -->
     <string name="title_multiline_paste">Multi-line Paste</string>
     <string name="msg_multiline_paste">Pasting %1$d lines of text into the terminal:</string>
-    <string name="action_paste_normal">Paste</string>
-    <string name="action_paste_as_spaces">Paste as Spaces</string>
+    <string name="msg_multiline_paste_unclosed_quote_warning">⚠️ Unclosed quote detected across a line break — this may be a wrapped single-line command ("Paste as Single Line" recommended).</string>
+    <string name="action_paste_normal">Keep Lines</string>
+    <string name="action_paste_as_spaces">Paste as Single Line</string>
     <string name="action_cancel">Cancel</string>
 
 </resources>

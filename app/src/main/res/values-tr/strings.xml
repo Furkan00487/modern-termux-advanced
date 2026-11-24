@@ -71,6 +71,8 @@
     <string name="title_share_transcript_with">Dökümü şuraya gönder:</string>
 
     <string name="action_share_selected_text">Seçili metni paylaş</string>
+    <string name="action_copy_selected_text_single_line">Tek satır olarak kopyala</string>
+    <string name="msg_copied_single_line_to_clipboard">Tek satır olarak panoya kopyalandı</string>
     <string name="title_share_selected_text">Terminal Metni</string>
     <string name="title_share_selected_text_with">Seçili metni şuraya gönder:</string>
 
@@ -246,8 +248,9 @@
     <!-- Multi-line Paste Dialog -->
     <string name="title_multiline_paste">Çok Satırlı Yapıştırma</string>
     <string name="msg_multiline_paste">Terminale %1$d satır metin yapıştırılıyor:</string>
-    <string name="action_paste_normal">Olduğu Gibi Yapıştır</string>
-    <string name="action_paste_as_spaces">Boşluk Olarak Yapıştır</string>
+    <string name="msg_multiline_paste_unclosed_quote_warning">⚠️ Satır sonunda kapanmamış tırnak algılandı — bölünmüş tek satır komutu olabilir ("Tek Satır Yapıştır" önerilir).</string>
+    <string name="action_paste_normal">Satırları Koru</string>
+    <string name="action_paste_as_spaces">Tek Satır Yapıştır</string>
     <string name="action_cancel">İptal</string>
 
 </resources>

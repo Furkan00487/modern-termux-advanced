@@ -699,6 +699,15 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             selectedText, mActivity.getString(R.string.title_share_selected_text_with));
     }
 
+    public void copySelectedTextAsSingleLine() {
+        String selectedText = mActivity.getTerminalView().getStoredSelectedText();
+        if (DataUtils.isNullOrEmpty(selectedText)) return;
+        String singleLineText = TerminalTextUtils.joinLinesAsSingleLine(selectedText);
+        if (DataUtils.isNullOrEmpty(singleLineText)) return;
+        ShareUtils.copyTextToClipboard(mActivity, singleLineText,
+            mActivity.getString(R.string.msg_copied_single_line_to_clipboard));
+    }
+
     public void showUrlSelection() {
         TerminalSession session = mActivity.getCurrentSession();
         if (session == null) return;
@@ -864,18 +873,24 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
             preview.append("\n  ...");
         }
 
-        String message = mActivity.getString(R.string.msg_multiline_paste, lineCount) + "\n\n" + preview.toString();
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder.append(mActivity.getString(R.string.msg_multiline_paste, lineCount));
+        if (TerminalTextUtils.hasLineBreakInsideQuote(text)) {
+            messageBuilder.append("\n\n").append(mActivity.getString(R.string.msg_multiline_paste_unclosed_quote_warning));
+        }
+        messageBuilder.append("\n\n").append(preview.toString());
 
         new AlertDialog.Builder(mActivity)
             .setTitle(R.string.title_multiline_paste)
-            .setMessage(message)
+            .setMessage(messageBuilder.toString())
             .setPositiveButton(R.string.action_paste_normal, (dialog, which) -> {
                 session.getEmulator().setPasteNewlinesAsSpaces(false);
                 session.getEmulator().paste(text);
             })
             .setNeutralButton(R.string.action_paste_as_spaces, (dialog, which) -> {
+                String singleLineText = TerminalTextUtils.joinLinesAsSingleLine(text);
                 session.getEmulator().setPasteNewlinesAsSpaces(true);
-                session.getEmulator().paste(text);
+                session.getEmulator().paste(singleLineText != null ? singleLineText : text);
             })
             .setNegativeButton(R.string.action_cancel, null)
             .show();
