@@ -15,31 +15,44 @@ void *countingCalloc(size_t count, size_t size) {
     return std::calloc(count, size);
 }
 
-void testRejectsGpuOnlyFlip() {
-    // AFBC / non-lockable buffer must never become root/screen pixmap via Present flip.
-    bool canFlip = lorieCanFlipBuffer(
+void testGpuOnlyFlipAllowedForAhbOnly() {
+    // GPU-only AHardwareBuffer can flip for zero-copy fullscreen scanout (GLES samples it directly).
+    assert(lorieCanFlipBuffer(
         true,   // hasPriv
         true,   // hasBuffer
         false,  // hasMem
-        true,   // gpuOnly (AFBC lock failed)
+        true,   // gpuOnly
         true,   // sizeMatchesRoot
         3,      // LORIEBUFFER_AHARDWAREBUFFER
         2,      // AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM
         true,   // imported
         false   // forceFlip
-    );
-    assert(canFlip == false);
+    ) == true);
+
+    // Non-AHB gpuOnly buffers must still be rejected.
+    assert(lorieCanFlipBuffer(
+        true, true, false, true, true,
+        2,      // LORIEBUFFER_FD
+        2,      // AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM
+        false, false
+    ) == false);
 }
 
-void testRejectsExternalRgbaAhbFlip() {
-    // External R8G8B8A8_UNORM (format 1) must go through GPU copy swizzle path, not flip as root.
-    bool canFlip = lorieCanFlipBuffer(
+void testAllowsExternalRgbaAhbFlip() {
+    // External R8G8B8A8_UNORM (format 1) flips cleanly now that redrawLocked uses lorieShouldSwizzleScreenDraw.
+    assert(lorieCanFlipBuffer(
         true, true, false, false, true,
         3,  // LORIEBUFFER_AHARDWAREBUFFER
         1,  // AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM
         true, false
-    );
-    assert(canFlip == false);
+    ) == true);
+
+    assert(lorieCanFlipBuffer(
+        true, true, false, true, true,
+        3,  // LORIEBUFFER_AHARDWAREBUFFER
+        1,  // AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM
+        true, false
+    ) == true);
 }
 
 void testAllowsInternalAhbFlip() {
@@ -155,8 +168,8 @@ void testComputePixelBufferBytesPreventsIntOverflowAndBadDims() {
 }  // namespace
 
 int main() {
-    testRejectsGpuOnlyFlip();
-    testRejectsExternalRgbaAhbFlip();
+    testGpuOnlyFlipAllowedForAhbOnly();
+    testAllowsExternalRgbaAhbFlip();
     testAllowsInternalAhbFlip();
     testAllocatesAndReusesCpuFallbackForGpuOnlyAccess();
     testPrefersLockedPointerWithoutAllocatingFallback();

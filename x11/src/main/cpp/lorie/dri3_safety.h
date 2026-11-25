@@ -20,14 +20,15 @@ static inline bool lorieCanFlipBuffer(bool hasPriv,
                                       uint8_t format,
                                       bool imported,
                                       bool forceFlip) {
-    if (!hasPriv || !hasBuffer || hasMem || gpuOnly || !sizeMatchesRoot)
-        return false;
-    if (format == 1 /* AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM */)
-        return false;
-    if (type == 2 /* LORIEBUFFER_FD */ && imported && !forceFlip)
+    if (!hasPriv || !hasBuffer || hasMem || !sizeMatchesRoot)
         return false;
     if (type != 2 && type != 3 /* LORIEBUFFER_AHARDWAREBUFFER */)
         return false;
+    if (gpuOnly && type != 3 /* LORIEBUFFER_AHARDWAREBUFFER */)
+        return false;
+    if (type == 2 /* LORIEBUFFER_FD */ && imported && !forceFlip)
+        return false;
+    (void) format;
     return true;
 }
 

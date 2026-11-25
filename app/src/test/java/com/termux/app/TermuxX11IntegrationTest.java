@@ -210,12 +210,14 @@ public class TermuxX11IntegrationTest {
         assertTrue("renderer.cpp exists", renderer.exists());
         String rendererSrc = new String(java.nio.file.Files.readAllBytes(renderer.toPath()), java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(rendererSrc.contains("lorieShouldSwizzleGpuCopy"));
+        assertTrue(rendererSrc.contains("lorieShouldSwizzleScreenDraw"));
 
         File helper = new File("../x11/src/main/cpp/lorie/renderer_format.h");
         if (!helper.exists()) helper = new File("x11/src/main/cpp/lorie/renderer_format.h");
         assertTrue("renderer_format.h exists", helper.exists());
         String helperSrc = new String(java.nio.file.Files.readAllBytes(helper.toPath()), java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(helperSrc.contains("AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM"));
+        assertTrue(helperSrc.contains("lorieShouldSwizzleScreenDraw"));
     }
 
     @Test
@@ -229,6 +231,7 @@ public class TermuxX11IntegrationTest {
         assertTrue(initSrc.contains("lorieShouldRecordExternalMem"));
         assertTrue(initSrc.contains("lorieSyncExaSysPtr"));
         assertTrue(initSrc.contains("lorieLockSucceeded"));
+        assertTrue(initSrc.contains("lorieUnlockRootCpuIfNeeded"));
 
         File bufferC = new File("../x11/src/main/cpp/lorie/buffer.c");
         if (!bufferC.exists()) bufferC = new File("x11/src/main/cpp/lorie/buffer.c");

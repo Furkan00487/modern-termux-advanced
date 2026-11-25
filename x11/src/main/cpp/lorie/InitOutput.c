@@ -224,6 +224,19 @@ static LoriePixmapPriv* lorieRootWindowPixmapPriv(void) {
     return devPriv ? exaGetPixmapDriverPrivate(devPriv) : NULL;
 }
 
+static void lorieUnlockRootCpuIfNeeded(void) {
+    LoriePixmapPriv *priv = lorieRootWindowPixmapPriv();
+    const LorieBuffer_Desc *desc;
+    if (!priv || !priv->buffer || !priv->locked)
+        return;
+    desc = LorieBuffer_description(priv->buffer);
+    if (!desc || desc->type != LORIEBUFFER_AHARDWAREBUFFER)
+        return;
+    LorieBuffer_unlock(priv->buffer);
+    priv->locked = NULL;
+    priv->wasLocked = FALSE;
+}
+
 static Bool TrueNoop() { return TRUE; }
 static Bool FalseNoop() { return FALSE; }
 static void VoidNoop() {}
@@ -539,6 +552,7 @@ static void lorieRequestLockTake(void) {
 static void lorieRequestLockRelease(void) {
     if (!pvfb->requestLockHeld)
         return;
+    lorieUnlockRootCpuIfNeeded();
     pvfb->requestLockHeld = FALSE;
     lorie_mutex_unlock(&pvfb->state->lock, &pvfb->state->lockingPid);
 
@@ -611,12 +625,11 @@ static Bool lorieRedraw(__unused ClientPtr pClient, __unused void *closure) {
         return TRUE;
 
     if (nonEmpty && priv->buffer) {
-        // We should unlock and lock buffer in order to update texture content on some devices
-        // In most cases AHardwareBuffer uses DMA memory which is shared between CPU and GPU
-        // and this is not needed. But according to docs we should do it for any case.
-        // Also according to AHardwareBuffer docs simultaneous reading in rendering thread and
-        // locking for writing in other thread is fine.
-        if (priv->locked) {
+        const LorieBuffer_Desc *desc = LorieBuffer_description(priv->buffer);
+        if (desc && desc->type == LORIEBUFFER_AHARDWAREBUFFER) {
+            lorieUnlockRootCpuIfNeeded();
+        } else if (priv->locked) {
+            // Non-AHB buffers still need unlock/lock to push CPU updates cleanly.
             LorieBuffer_unlock(priv->buffer);
             status = LorieBuffer_lock(priv->buffer, &priv->locked);
             if (status)
@@ -1085,6 +1098,8 @@ Bool lorieTryScheduleGpuCopy(PixmapPtr pixmap, PixmapPtr dst, RegionPtr update, 
         // actually be in flight, instead of on every AHardwareBuffer-backed pixmap access.
         LorieBuffer_gpuCopyPendingInc(dstBuffer);
     } else {
+        // Release any leftover CPU lock on the root AHardwareBuffer before GPU blit executes.
+        lorieUnlockRootCpuIfNeeded();
         // Tracked so CPU reads of the screen pixmap only pay for the GPU lock (see
         // lorieNeedsGpuLock) while a GPU write into it can actually be in flight.
         pvfb->rootGpuCopyPending++;
@@ -1136,7 +1151,7 @@ void lorieGpuCopyAck(PixmapPtr pixmap, void *dst_buffer) {
 
 Bool loriePresentFlip(__unused RRCrtcPtr crtc, __unused uint64_t event_id, __unused uint64_t target_msc, PixmapPtr pixmap, __unused Bool sync_flip) {
     LoriePixmapPriv* priv = (LoriePixmapPriv*) exaGetPixmapDriverPrivate(pixmap);
-    if (!priv || !priv->buffer || priv->mem || priv->gpuOnly ||
+    if (!priv || !priv->buffer || priv->mem ||
         pvfb->root.width != pixmap->drawable.width || pvfb->root.height != pixmap->drawable.height)
         return FALSE;
 
@@ -1144,6 +1159,10 @@ Bool loriePresentFlip(__unused RRCrtcPtr crtc, __unused uint64_t event_id, __unu
     lorieEnsureGpuSampleable(pixmap, pvfb->root.legacyDrawing ? LORIEBUFFER_FD : LORIEBUFFER_AHARDWAREBUFFER);
 
     const LorieBuffer_Desc *desc = LorieBuffer_description(priv->buffer);
+    if (!desc)
+        return FALSE;
+    if (priv->gpuOnly && (pvfb->gpuPresentDisabled || pvfb->root.legacyDrawing))
+        return FALSE;
     char *forceFlip = getenv("TERMUX_X11_FORCE_FLIP");
     if (!lorieCanFlipBuffer(true, priv->buffer != NULL, priv->mem != NULL, priv->gpuOnly, true,
                             desc->type, desc->format, priv->imported,
@@ -1319,10 +1338,14 @@ void lorieFinishAccess(PixmapPtr pPix, int index) {
     LoriePixmapPriv *priv = exaGetPixmapDriverPrivate(pPix);
     if (!priv)
         return;
+    if (pScreenPtr && pPix == pScreenPtr->devPrivate &&
+        !lorieKeepLockUntilRequestEnd(pPix, index) && !pvfb->requestLockHeld)
+        lorieUnlockRootCpuIfNeeded();
+
     if (lorieNeedsGpuLock(pPix, priv, index) && !lorieKeepLockUntilRequestEnd(pPix, index))
         lorie_mutex_unlock(&pvfb->state->lock, &pvfb->state->lockingPid);
 
-    if (!priv->wasLocked) {
+    if (!priv->wasLocked && priv->locked) {
         LorieBuffer_unlock(priv->buffer);
         priv->locked = NULL;
         priv->wasLocked = FALSE;

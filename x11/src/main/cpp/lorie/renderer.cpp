@@ -405,14 +405,25 @@ static bool cpuAndGpuShareAhbMemory(EGLDisplay egl_display) {
                              -1, nullptr, (void **) &pixels) != 0 || !pixels)
         goto out;
     pixels[0] = 0;
+    // Release the CPU mapping before GPU rendering so non-coherent mobile GPUs (e.g. Mali)
+    // can flush/invalidate caches across lock/unlock boundaries safely.
+    AHardwareBuffer_unlock(buf, nullptr);
+    pixels = nullptr;
 
-    // GPU writes while the buffer is locked by the CPU.
+    // GPU writes while the buffer is unlocked on CPU.
     glClearColor(0x11 / 255.f, 0x22 / 255.f, 0x33 / 255.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glFinish();
 
+    if (AHardwareBuffer_lock(buf, AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN,
+                             -1, nullptr, (void **) &pixels) != 0 || !pixels) {
+        loge("Failed to re-lock buffer after GPU write");
+        result = false;
+        goto out;
+    }
+
     if ((pixels[0] & 0xffffff) != 0x332211) {
-        loge("CPU mapping does not see GPU writes (got %08x)", pixels[0]);
+        loge("CPU mapping does not see GPU writes after lock (got %08x)", pixels[0]);
         AHardwareBuffer_unlock(buf, nullptr);
         result = false;
         goto out;
@@ -1062,7 +1073,7 @@ void Renderer::redrawLocked(bool* waitingForBuffers) {
                sourceLeft / (float) desc->width * xfactor, sourceTop / (float) desc->height,
                (sourceLeft + sourceWidth) / (float) desc->width * xfactor,
                (sourceTop + sourceHeight) / (float) desc->height,
-               LorieBuffer_isRgba(buffer));
+               lorieShouldSwizzleScreenDraw(desc->type, desc->format, LorieBuffer_isRgba(buffer)));
     fence = eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, nullptr);
     glFlush();
 

@@ -29,6 +29,15 @@ int main() {
     // 5. FD/SHM pixmap (B8G8R8A8=5 -> srcIsRgba=false) + Adreno root (dstIsRgba=false).
     assert(lorieShouldSwizzleGpuCopy(kLorieBufferFd, kAhbFormatBgra8888, false, false) == 0);
 
-    std::puts("renderer_format_test: all 5 assertions passed");
+    // 6. Screen draw swizzle: external Vulkan AHB (R8G8B8A8=1) is already true RGBA -> no .bgra swap.
+    assert(lorieShouldSwizzleScreenDraw(kLorieBufferAhb, kAhbFormatRgba8888, true) == 0);
+
+    // 7. Screen draw swizzle: Lorie X11 root (R8G8B8X8=2) holds X11 BGRX -> needs .bgra swap.
+    assert(lorieShouldSwizzleScreenDraw(kLorieBufferAhb, kAhbFormatRgbx8888, true) == 1);
+
+    // 8. Screen draw swizzle: BGRA8888 (format 5, isRgba=false) -> no .bgra swap.
+    assert(lorieShouldSwizzleScreenDraw(kLorieBufferAhb, kAhbFormatBgra8888, false) == 0);
+
+    std::puts("renderer_format_test: all 8 assertions passed");
     return 0;
 }

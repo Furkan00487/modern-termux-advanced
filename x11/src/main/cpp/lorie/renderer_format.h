@@ -26,3 +26,19 @@ static inline uint8_t lorieShouldSwizzleGpuCopy(uint8_t srcType,
     }
     return (srcIsRgba != dstIsRgba) ? 1 : 0;
 }
+
+/**
+ * Determines whether drawing the root/flipped texture to the Android EGL surface
+ * needs the .bgra shader swizzle.
+ */
+static inline uint8_t lorieShouldSwizzleScreenDraw(uint8_t srcType,
+                                                  uint8_t srcFormat,
+                                                  bool isRgba) {
+    // External Vulkan/DRI3 AHB buffers in R8G8B8A8_UNORM (1) store true RGBA order,
+    // unlike Lorie's X11 R8G8B8X8 (2) root which stores X11 BGRX pixels.
+    if (srcType == 3 /* LORIEBUFFER_AHARDWAREBUFFER */ &&
+        srcFormat == 1 /* AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM */) {
+        return 0;
+    }
+    return isRgba ? 1 : 0;
+}
