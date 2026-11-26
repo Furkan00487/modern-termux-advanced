@@ -1,7 +1,7 @@
 package com.termux.view;
 
 import com.termux.terminal.TerminalRow;
-import com.termux.terminal.TextStyle;
+import com.termux.terminal.WcWidth;
 
 import org.junit.Test;
 
@@ -17,7 +17,7 @@ public class TerminalRendererTest {
         for (int i = 0; i < text.length(); ) {
             int cp = text.codePointAt(i);
             row.setChar(col, cp, style);
-            col += Math.max(1, com.termux.terminal.WcWidth.width(cp));
+            col += Math.max(1, WcWidth.width(cp));
             i += Character.charCount(cp);
         }
         return row;
@@ -35,7 +35,7 @@ public class TerminalRendererTest {
 
     @Test
     public void pairsAdjacentRegionalIndicatorsForFlagEmoji() {
-        long style = TextStyle.NORMAL;
+        long style = 0L;
         TerminalRow row = rowWithText(10, "\uD83C\uDDF9\uD83C\uDDF7a", style); // 🇹🇷a
 
         int pairChars = TerminalRenderer.getRegionalIndicatorPairChars(
@@ -45,7 +45,7 @@ public class TerminalRendererTest {
 
     @Test
     public void pairsConsecutiveFlagsWithoutMisaligningBoundary() {
-        long style = TextStyle.NORMAL;
+        long style = 0L;
         // 🇹🇷🇺🇸
         TerminalRow row = rowWithText(10, "\uD83C\uDDF9\uD83C\uDDF7\uD83C\uDDFA\uD83C\uDDF8", style);
 
@@ -57,7 +57,7 @@ public class TerminalRendererTest {
 
     @Test
     public void doesNotPairUnpairedRegionalIndicatorOrRowEdge() {
-        long style = TextStyle.NORMAL;
+        long style = 0L;
         TerminalRow row = rowWithText(4, "\uD83C\uDDF9a", style); // 🇹a
         assertEquals(0, TerminalRenderer.getRegionalIndicatorPairChars(
             row.mText, 0, 2, row.getSpaceUsed(), 0, 4, row, style, -1, -1));
@@ -69,8 +69,8 @@ public class TerminalRendererTest {
 
     @Test
     public void doesNotPairAcrossStyleOrPartialSelectionBoundary() {
-        long styleA = TextStyle.encode(1, 0, 0);
-        long styleB = TextStyle.encode(2, 0, 0);
+        long styleA = 1L;
+        long styleB = 2L;
         TerminalRow styledRow = new TerminalRow(6, styleA);
         styledRow.setChar(0, 0x1F1F9, styleA);
         styledRow.setChar(1, 0x1F1F7, styleB);
