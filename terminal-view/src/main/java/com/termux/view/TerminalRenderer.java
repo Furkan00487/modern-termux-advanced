@@ -99,17 +99,24 @@ public final class TerminalRenderer {
                 final int charsForCodePoint = charIsHighsurrogate ? 2 : 1;
                 final int codePoint = charIsHighsurrogate ? Character.toCodePoint(charAtIndex, line[currentCharIndex + 1]) : charAtIndex;
                 final int codePointWcWidth = WcWidth.width(codePoint);
-                final boolean insideCursor = (cursorX == column || (codePointWcWidth == 2 && cursorX == column + 1));
-                final boolean insideSelection = column >= selx1 && column <= selx2;
                 final long style = lineObject.getStyle(column);
+                final int pairChars = isRegionalIndicator(codePoint)
+                    ? getRegionalIndicatorPairChars(line, currentCharIndex, charsForCodePoint,
+                        charsUsedInLine, column, columns, lineObject, style, selx1, selx2)
+                    : 0;
+                final int clusterCharCount = pairChars > 0 ? pairChars : charsForCodePoint;
+                final int clusterWcWidth = pairChars > 0 ? 2 : codePointWcWidth;
+                final boolean insideCursor = (cursorX == column || (clusterWcWidth == 2 && cursorX == column + 1));
+                final boolean insideSelection = column >= selx1 && column <= selx2;
 
-                // Check if the measured text width for this code point is not the same as that expected by wcwidth().
+                // Check if the measured text width for this code point (or flag cluster) is not the same as that expected by wcwidth().
                 // This could happen for some fonts which are not truly monospace, or for more exotic characters such as
-                // smileys which android font renders as wide.
-                // If this is detected, we draw this code point scaled to match what wcwidth() expects.
-                final float measuredCodePointWidth = (codePoint < asciiMeasures.length) ? asciiMeasures[codePoint] : mTextPaint.measureText(line,
-                    currentCharIndex, charsForCodePoint);
-                final boolean fontWidthMismatch = Math.abs(measuredCodePointWidth / mFontWidth - codePointWcWidth) > 0.01;
+                // smileys and flag emojis which android font renders as wide.
+                // If this is detected, we draw this cluster scaled to match what wcwidth() expects.
+                final float measuredCodePointWidth = (pairChars == 0 && codePoint < asciiMeasures.length)
+                    ? asciiMeasures[codePoint]
+                    : mTextPaint.measureText(line, currentCharIndex, clusterCharCount);
+                final boolean fontWidthMismatch = Math.abs(measuredCodePointWidth / mFontWidth - clusterWcWidth) > 0.01;
 
                 if (style != lastRunStyle || insideCursor != lastRunInsideCursor || insideSelection != lastRunInsideSelection || fontWidthMismatch || lastRunFontWidthMismatch) {
                     if (column == 0) {
@@ -135,8 +142,8 @@ public final class TerminalRenderer {
                     lastRunFontWidthMismatch = fontWidthMismatch;
                 }
                 measuredWidthForRun += measuredCodePointWidth;
-                column += codePointWcWidth;
-                currentCharIndex += charsForCodePoint;
+                column += clusterWcWidth;
+                currentCharIndex += clusterCharCount;
                 while (currentCharIndex < charsUsedInLine && WcWidth.width(line, currentCharIndex) <= 0) {
                     // Eat combining chars so that they are treated as part of the last non-combining code point,
                     // instead of e.g. being considered inside the cursor in the next run.
@@ -245,5 +252,33 @@ public final class TerminalRenderer {
 
     public int getFontLineSpacing() {
         return mFontLineSpacing;
+    }
+
+    /** Returns {@code true} if {@code codePoint} is a Unicode Regional Indicator Symbol (A-Z). */
+    static boolean isRegionalIndicator(int codePoint) {
+        return codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF;
+    }
+
+    /**
+     * Returns the total Java {@code char} count of a Regional Indicator flag pair starting at
+     * {@code currentCharIndex} when the adjacent column also contains a Regional Indicator with
+     * matching style and selection state, or {@code 0} when the code point should be drawn alone.
+     */
+    static int getRegionalIndicatorPairChars(char[] line, int currentCharIndex, int charsForCodePoint,
+                                             int charsUsedInLine, int column, int columns,
+                                             TerminalRow lineObject, long style, int selx1, int selx2) {
+        if (column + 1 >= columns) return 0;
+        final int nextCharIndex = currentCharIndex + charsForCodePoint;
+        if (nextCharIndex + 1 >= charsUsedInLine) return 0;
+        final char nextHigh = line[nextCharIndex];
+        final char nextLow = line[nextCharIndex + 1];
+        if (!Character.isHighSurrogate(nextHigh) || !Character.isLowSurrogate(nextLow)) return 0;
+        final int nextCodePoint = Character.toCodePoint(nextHigh, nextLow);
+        if (!isRegionalIndicator(nextCodePoint)) return 0;
+        if (lineObject.getStyle(column + 1) != style) return 0;
+        final boolean firstSelected = column >= selx1 && column <= selx2;
+        final boolean secondSelected = (column + 1) >= selx1 && (column + 1) <= selx2;
+        if (firstSelected != secondSelected) return 0;
+        return charsForCodePoint + 2;
     }
 }
