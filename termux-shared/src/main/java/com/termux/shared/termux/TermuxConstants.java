@@ -348,6 +348,41 @@ public final class TermuxConstants {
 
     /** Termux app name */
     public static final String TERMUX_APP_NAME = "Modern Termux"; // Default: "Modern Termux"
+    /** Upstream Termux app name */
+    public static final String TERMUX_UPSTREAM_APP_NAME = "Termux"; // Default: "Termux"
+    /** Modern Termux GitHub organization name */
+    public static final String MODERN_TERMUX_GITHUB_ORGANIZATION_NAME = "Furkan00487";
+    /** Modern Termux GitHub organization url */
+    public static final String MODERN_TERMUX_GITHUB_ORGANIZATION_URL = "https://github.com/" + MODERN_TERMUX_GITHUB_ORGANIZATION_NAME;
+    /** Active Modern Termux variant display name */
+    public static final String MODERN_TERMUX_VARIANT_NAME = "Modern Termux Advanced";
+    /** Active Modern Termux GitHub repo name */
+    public static final String MODERN_TERMUX_GITHUB_REPO_NAME = "modern-termux-advanced";
+    /** Active Modern Termux GitHub repo url */
+    public static final String MODERN_TERMUX_GITHUB_REPO_URL = MODERN_TERMUX_GITHUB_ORGANIZATION_URL + "/" + MODERN_TERMUX_GITHUB_REPO_NAME;
+    /** Active Modern Termux GitHub issues repo url */
+    public static final String MODERN_TERMUX_GITHUB_ISSUES_REPO_URL = MODERN_TERMUX_GITHUB_REPO_URL + "/issues";
+    /** Active Modern Termux GitHub releases url */
+    public static final String MODERN_TERMUX_GITHUB_RELEASES_URL = MODERN_TERMUX_GITHUB_REPO_URL + "/releases";
+
+    /** Modern Termux standard app name and GitHub repo */
+    public static final String MODERN_TERMUX_STANDARD_APP_NAME = "Modern Termux";
+    public static final String MODERN_TERMUX_STANDARD_GITHUB_REPO_NAME = "modern-termux";
+    public static final String MODERN_TERMUX_STANDARD_GITHUB_REPO_URL = MODERN_TERMUX_GITHUB_ORGANIZATION_URL + "/" + MODERN_TERMUX_STANDARD_GITHUB_REPO_NAME;
+    /** Modern Termux Advanced app name and GitHub repo */
+    public static final String MODERN_TERMUX_ADVANCED_APP_NAME = "Modern Termux Advanced";
+    public static final String MODERN_TERMUX_ADVANCED_GITHUB_REPO_NAME = "modern-termux-advanced";
+    public static final String MODERN_TERMUX_ADVANCED_GITHUB_REPO_URL = MODERN_TERMUX_GITHUB_ORGANIZATION_URL + "/" + MODERN_TERMUX_ADVANCED_GITHUB_REPO_NAME;
+    /** Modern Termux TV app name and GitHub repo */
+    public static final String MODERN_TERMUX_TV_APP_NAME = "Modern Termux TV";
+    public static final String MODERN_TERMUX_TV_GITHUB_REPO_NAME = "modern-termux-tv";
+    public static final String MODERN_TERMUX_TV_GITHUB_REPO_URL = MODERN_TERMUX_GITHUB_ORGANIZATION_URL + "/" + MODERN_TERMUX_TV_GITHUB_REPO_NAME;
+    /** Modern Termux:MOTD app name and GitHub repo */
+    public static final String MODERN_TERMUX_MOTD_APP_NAME = "Modern Termux:MOTD";
+    public static final String MODERN_TERMUX_MOTD_GITHUB_REPO_NAME = "modern-termux-motd";
+    public static final String MODERN_TERMUX_MOTD_GITHUB_REPO_URL = MODERN_TERMUX_GITHUB_ORGANIZATION_URL + "/" + MODERN_TERMUX_MOTD_GITHUB_REPO_NAME;
+    public static final String MODERN_TERMUX_MOTD_GITHUB_ISSUES_REPO_URL = MODERN_TERMUX_MOTD_GITHUB_REPO_URL + "/issues";
+
     /** Termux package name */
     public static final String TERMUX_PACKAGE_NAME = "com.termux"; // Default: "com.termux"
     /** Termux GitHub repo name */
@@ -533,13 +568,13 @@ public final class TermuxConstants {
      */
 
     /** Termux Site */
-    public static final String TERMUX_SITE = TERMUX_APP_NAME + " Site"; // Default: "Termux Site"
+    public static final String TERMUX_SITE = TERMUX_UPSTREAM_APP_NAME + " Site"; // Default: "Termux Site"
 
     /** Termux Site url */
     public static final String TERMUX_SITE_URL = "https://termux.dev"; // Default: "https://termux.dev"
 
     /** Termux Wiki */
-    public static final String TERMUX_WIKI = TERMUX_APP_NAME + " Wiki"; // Default: "Termux Wiki"
+    public static final String TERMUX_WIKI = TERMUX_UPSTREAM_APP_NAME + " Wiki"; // Default: "Termux Wiki"
 
     /** Termux Wiki url */
     public static final String TERMUX_WIKI_URL = "https://wiki.termux.com"; // Default: "https://wiki.termux.com"
