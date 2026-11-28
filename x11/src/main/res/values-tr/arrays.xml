@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="touchscreenInputModesEntries">
+        <item>Dokunmatik yüzey (Trackpad)</item>
+        <item>Simüle edilmiş dokunmatik ekran</item>
+        <item>Doğrudan dokunuş</item>
+    </string-array>
+    <string-array name="screenIdleTimeoutEntries">
+        <item>Asla (ekranı açık tut)</item>
+        <item>1 dakika</item>
+        <item>5 dakika</item>
+        <item>10 dakika</item>
+        <item>20 dakika</item>
+        <item>1 saat</item>
+        <item>Sistem</item>
+    </string-array>
+    <string-array name="transformCapturedPointerEntries">
+        <item>Hayır</item>
+        <item>Saat yönünde</item>
+        <item>Saat yönünün tersine</item>
+        <item>Baş aşağı (Ters)</item>
+        <item>Otomatik (dokunmatik yüzey için)</item>
+    </string-array>
+    <string-array name="displayResolutionVariantsEntries">
+        <item>Doğal (Native)</item>
+        <item>Ölçeklenmiş (Scaled)</item>
+        <item>Tam (Exact)</item>
+        <item>Özel (Custom)</item>
+    </string-array>
+    <string-array name="displayFilteringVariantsEntries">
+        <item>Çift doğrusal (Bilinear - Yumuşak)</item>
+        <item>En yakın komşu (Nearest - Keskin)</item>
+    </string-array>
+    <string-array name="userActionsEntries">
+        <item>İşlem yok</item>
+        <item>Ekran klavyesini aç/kapat</item>
+        <item>Ek tuş çubuğunu aç/kapat</item>
+        <item>Tercihleri aç</item>
+        <item>İşaretçi ve klavye yakalamasını bırak</item>
+        <item>Tam ekranı aç/kapat</item>
+        <item>Etkinliği yeniden başlat</item>
+        <item>Çıkış</item>
+    </string-array>
+    <string-array name="userActionsVolumeDownEntries">
+        <item>@array/userActionsEntries</item>
+        <item>Ses kısma tuşunu gönder</item>
+    </string-array>
+    <string-array name="userActionsVolumeUpEntries">
+        <item>@array/userActionsEntries</item>
+        <item>Ses açma tuşunu gönder</item>
+    </string-array>
+    <string-array name="userActionsMediaKeyEntries">
+        <item>@array/userActionsEntries</item>
+        <item>Medya eylemini gönder</item>
+    </string-array>
+    <string-array name="forceOrientationVariantsEntries">
+        <item>Otomatik</item>
+        <item>Dikey (Portre)</item>
+        <item>Yatay (Manzara)</item>
+        <item>Ters dikey</item>
+        <item>Ters yatay</item>
+    </string-array>
+    <string-array name="ekbarPositionEntries">
+        <item>Üst</item>
+        <item>Alt</item>
+        <item>Sol</item>
+        <item>Sağ</item>
+    </string-array>
+</resources>

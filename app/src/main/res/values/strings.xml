@@ -253,7 +253,7 @@
     <string name="about_preference_title">About</string>
 
     <!-- Donate Preference -->
-    <string name="donate_preference_title">Donate</string>
+    <string name="donate_preference_title">Donate to Upstream Termux</string>
 
     <!-- Multi-line Paste Dialog -->
     <string name="title_multiline_paste">Multi-line Paste</string>
@@ -262,5 +262,45 @@
     <string name="action_paste_normal">Keep Lines</string>
     <string name="action_paste_as_spaces">Paste as Single Line</string>
     <string name="action_cancel">Cancel</string>
+
+    <!-- Compose Expressive Settings Hub -->
+    <string name="settings_hub_title">Settings</string>
+    <string name="settings_section_termux">Terminal</string>
+    <string name="settings_section_x11">X11 Desktop</string>
+    <string name="settings_search_placeholder">Search Terminal &amp; X11 settings…</string>
+    <string name="settings_search_clear">Clear search</string>
+    <string name="settings_search_no_results">No matching settings for \"%1$s\"</string>
+    <string name="settings_search_results_count">%1$d results</string>
+    <string name="settings_back">Navigate back</string>
+    <string name="settings_copy">Copy</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_reset">Reset</string>
+    <string name="settings_ok">OK</string>
+    <string name="settings_grant">Grant permission</string>
+    <string name="settings_group_core">Core Terminal</string>
+    <string name="settings_group_plugins">Installed Plugins</string>
+    <string name="settings_group_system">System &amp; Support</string>
+    <string name="settings_group_x11_categories">Desktop Categories</string>
+    <string name="settings_group_x11_info">X11 Info</string>
+    <string name="settings_group_x11_display">Display &amp; Scaling</string>
+    <string name="settings_group_x11_window">Window &amp; Power</string>
+    <string name="settings_group_x11_touch">Touch &amp; Stylus</string>
+    <string name="settings_group_x11_mouse">Pointer Capture &amp; Input</string>
+    <string name="settings_group_x11_kbd_bars">On-Screen &amp; Hardware</string>
+    <string name="settings_group_x11_kbd_intercept">Shortcuts &amp; Accessibility</string>
+    <string name="settings_group_x11_other_actions">Actions &amp; Display Scope</string>
+    <string name="settings_group_x11_ekbar_layout">Bar Layout</string>
+    <string name="settings_group_x11_ekbar_keys">Key Definition</string>
+    <string name="settings_x11_output_summary">Resolution mode, scaling, fullscreen, timeout</string>
+    <string name="settings_x11_pointer_summary">Trackpad, mouse helper, stylus, pointer capture</string>
+    <string name="settings_x11_kbd_summary">Extra key bar, scancodes, DeX &amp; accessibility</string>
+    <string name="settings_x11_other_summary">Clipboard sync, gesture actions, multi-display</string>
+    <string name="settings_about_summary">App version, diagnostics, and project links</string>
+    <string name="settings_donate_summary">Support the original Termux project (termux.dev)</string>
+    <string name="settings_detail_placeholder_title">Select a category</string>
+    <string name="settings_detail_placeholder_subtitle">Pick any Terminal or X11 category on the left, or search across all settings.</string>
+    <string name="settings_notification_permission_summary">Required on Android 13+ for persistent X11 notification controls</string>
+    <string name="settings_clipboard_sync_summary">Sync clipboard content between Android and X11</string>
+    <string name="settings_custom_resolution_hint">Width × Height (e.g. 1920x1080)</string>
 
 </resources>

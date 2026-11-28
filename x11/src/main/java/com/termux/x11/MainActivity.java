@@ -224,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
 
     /** ActivityOptions requesting freeform windowing mode. */
     private static Bundle freeformActivityOptions() {
+        ensureNativeLibraryLoaded();
         ActivityOptions opts = ActivityOptions.makeBasic();
         nativeSetLaunchWindowingModeFreeform(opts);
         return opts.toBundle();
@@ -293,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     @SuppressLint({"AppCompatMethod", "ObsoleteSdkInt", "ClickableViewAccessibility", "WrongConstant", "UnspecifiedRegisterReceiverFlag"})
     protected void onCreate(Bundle savedInstanceState) {
+        ensureNativeLibraryLoaded();
         super.onCreate(savedInstanceState);
 
         app = (LorieApp) getApplication();
@@ -1324,8 +1326,17 @@ public class MainActivity extends AppCompatActivity {
 
     private static native void nativeSetLaunchWindowingModeFreeform(Object activityOptions);
 
-    static {
-        System.loadLibrary("Xlorie");
+    private static volatile boolean nativeLoaded = false;
+
+    private static void ensureNativeLibraryLoaded() {
+        if (!nativeLoaded) {
+            synchronized (MainActivity.class) {
+                if (!nativeLoaded) {
+                    System.loadLibrary("Xlorie");
+                    nativeLoaded = true;
+                }
+            }
+        }
     }
 
     public static class MainActivityTagged extends MainActivity {

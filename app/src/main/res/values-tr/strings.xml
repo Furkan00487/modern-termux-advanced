@@ -243,7 +243,7 @@
     <string name="about_preference_title">Hakkında</string>
 
     <!-- Donate Preference -->
-    <string name="donate_preference_title">Bağış Yap</string>
+    <string name="donate_preference_title">Upstream Termux\'a Bağış Yap</string>
 
     <!-- Multi-line Paste Dialog -->
     <string name="title_multiline_paste">Çok Satırlı Yapıştırma</string>
@@ -252,5 +252,45 @@
     <string name="action_paste_normal">Satırları Koru</string>
     <string name="action_paste_as_spaces">Tek Satır Yapıştır</string>
     <string name="action_cancel">İptal</string>
+
+    <!-- Compose Expressive Ayarlar Merkezi -->
+    <string name="settings_hub_title">Ayarlar</string>
+    <string name="settings_section_termux">Terminal</string>
+    <string name="settings_section_x11">X11 Masaüstü</string>
+    <string name="settings_search_placeholder">Terminal ve X11 ayarlarında ara…</string>
+    <string name="settings_search_clear">Aramayı temizle</string>
+    <string name="settings_search_no_results">\"%1$s\" için eşleşen ayar bulunamadı</string>
+    <string name="settings_search_results_count">%1$d sonuç</string>
+    <string name="settings_back">Geri dön</string>
+    <string name="settings_copy">Kopyala</string>
+    <string name="settings_save">Kaydet</string>
+    <string name="settings_reset">Sıfırla</string>
+    <string name="settings_ok">Tamam</string>
+    <string name="settings_grant">İzin ver</string>
+    <string name="settings_group_core">Çekirdek Terminal</string>
+    <string name="settings_group_plugins">Yüklü Eklentiler</string>
+    <string name="settings_group_system">Sistem ve Destek</string>
+    <string name="settings_group_x11_categories">Masaüstü Kategorileri</string>
+    <string name="settings_group_x11_info">X11 Bilgisi</string>
+    <string name="settings_group_x11_display">Görüntü ve Ölçekleme</string>
+    <string name="settings_group_x11_window">Pencere ve Güç</string>
+    <string name="settings_group_x11_touch">Dokunmatik ve Kalem</string>
+    <string name="settings_group_x11_mouse">İşaretçi Yakalama ve Giriş</string>
+    <string name="settings_group_x11_kbd_bars">Ekran ve Donanım Klavyesi</string>
+    <string name="settings_group_x11_kbd_intercept">Kısayollar ve Erişilebilirlik</string>
+    <string name="settings_group_x11_other_actions">Eylemler ve Ekran Kapsamı</string>
+    <string name="settings_group_x11_ekbar_layout">Çubuk Düzeni</string>
+    <string name="settings_group_x11_ekbar_keys">Tuş Tanımı</string>
+    <string name="settings_x11_output_summary">Çözünürlük modu, ölçekleme, tam ekran, zaman aşımı</string>
+    <string name="settings_x11_pointer_summary">Trackpad, fare yardımcısı, kalem, işaretçi yakalama</string>
+    <string name="settings_x11_kbd_summary">Ek tuş çubuğu, scancode, DeX ve erişilebilirlik</string>
+    <string name="settings_x11_other_summary">Pano paylaşımı, hareket eylemleri, çoklu ekran</string>
+    <string name="settings_about_summary">Uygulama sürümü, tanılama ve proje bağlantıları</string>
+    <string name="settings_donate_summary">Orijinal Termux projesini destekle (termux.dev)</string>
+    <string name="settings_detail_placeholder_title">Bir kategori seç</string>
+    <string name="settings_detail_placeholder_subtitle">Soldan bir Terminal veya X11 kategorisi seç ya da tüm ayarlarda ara.</string>
+    <string name="settings_notification_permission_summary">Android 13+ cihazlarda kalıcı X11 bildirim kontrolleri için gerekir</string>
+    <string name="settings_clipboard_sync_summary">Pano içeriğini Android ve X11 arasında eşitle</string>
+    <string name="settings_custom_resolution_hint">Genişlik × Yükseklik (ör. 1920x1080)</string>
 
 </resources>

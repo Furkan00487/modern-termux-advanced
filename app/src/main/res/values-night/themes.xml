@@ -4,6 +4,16 @@
      https://material.io/develop/android/theming/dark
     -->
 
+    <!-- AMOLED Black OLED Host Theme for Compose Settings Hub. -->
+    <style name="Theme.TermuxSettings.OLED" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="colorPrimary">#00E5FF</item>
+    </style>
+
     <!-- TermuxActivity DayNight NoActionBar theme. -->
     <!-- See https://developer.android.com/training/material/theme.html for how to customize the Material theme. -->
     <!-- NOTE: Cannot use "Light." since it hides the terminal scrollbar on the default black background. -->

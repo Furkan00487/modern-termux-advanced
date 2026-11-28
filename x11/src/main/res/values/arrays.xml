@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="touchscreenInputModesEntries">
-        <item>Dokunmatik yüzey (Trackpad)</item>
-        <item>Simüle edilmiş dokunmatik ekran</item>
-        <item>Doğrudan dokunuş</item>
+        <item>Trackpad</item>
+        <item>Simulated touchscreen</item>
+        <item>Direct touch</item>
     </string-array>
     <string-array name="touchscreenInputModesValues">
         <item>1</item>
@@ -11,13 +11,13 @@
         <item>3</item>
     </string-array>
     <string-array name="screenIdleTimeoutEntries">
-        <item>Asla (ekranı açık tut)</item>
-        <item>1 dakika</item>
-        <item>5 dakika</item>
-        <item>10 dakika</item>
-        <item>20 dakika</item>
-        <item>1 saat</item>
-        <item>Sistem</item>
+        <item>Never (keep screen on)</item>
+        <item>1 minute</item>
+        <item>5 minutes</item>
+        <item>10 minutes</item>
+        <item>20 minutes</item>
+        <item>1 hour</item>
+        <item>System</item>
     </string-array>
     <string-array name="screenIdleTimeoutValues">
         <item>never</item>
@@ -29,11 +29,11 @@
         <item>system</item>
     </string-array>
     <string-array name="transformCapturedPointerEntries">
-        <item>Hayır</item>
-        <item>Saat yönünde</item>
-        <item>Saat yönünün tersine</item>
-        <item>Baş aşağı (Ters)</item>
-        <item>Otomatik (dokunmatik yüzey için)</item>
+        <item>No</item>
+        <item>Clockwise</item>
+        <item>Counter-clockwise</item>
+        <item>Upside down</item>
+        <item>Automatic (for touchpad)</item>
     </string-array>
     <string-array name="transformCapturedPointerValues">
         <item>no</item>
@@ -43,10 +43,10 @@
         <item>at</item>
     </string-array>
     <string-array name="displayResolutionVariantsEntries">
-        <item>Doğal (Native)</item>
-        <item>Ölçeklenmiş (Scaled)</item>
-        <item>Tam (Exact)</item>
-        <item>Özel (Custom)</item>
+        <item>Native</item>
+        <item>Scaled</item>
+        <item>Exact</item>
+        <item>Custom</item>
     </string-array>
     <string-array name="displayResolutionVariants">
         <item>native</item>
@@ -81,22 +81,22 @@
         <item>7680x4320</item>
     </string-array>
     <string-array name="displayFilteringVariantsEntries">
-        <item>Çift doğrusal (Bilinear - Yumuşak)</item>
-        <item>En yakın komşu (Nearest - Keskin)</item>
+        <item>Bilinear (Soft)</item>
+        <item>Nearest neighbor (Sharp)</item>
     </string-array>
     <string-array name="displayFilteringVariants">
         <item>bilinear</item>
         <item>nearest</item>
     </string-array>
     <string-array name="userActionsEntries">
-        <item>İşlem yok</item>
-        <item>Ekran klavyesini aç/kapat</item>
-        <item>Ek tuş çubuğunu aç/kapat</item>
-        <item>Tercihleri aç</item>
-        <item>İşaretçi ve klavye yakalamasını bırak</item>
-        <item>Tam ekranı aç/kapat</item>
-        <item>Etkinliği yeniden başlat</item>
-        <item>Çıkış</item>
+        <item>No action</item>
+        <item>Toggle soft keyboard</item>
+        <item>Toggle additional key bar</item>
+        <item>Open preferences</item>
+        <item>Release pointer and keyboard capture</item>
+        <item>Toggle fullscreen</item>
+        <item>Restart activity</item>
+        <item>Exit</item>
     </string-array>
     <string-array name="userActionsValues">
         <item>no action</item>
@@ -110,7 +110,7 @@
     </string-array>
     <string-array name="userActionsVolumeDownEntries">
         <item>@array/userActionsEntries</item>
-        <item>Ses kısma tuşunu gönder</item>
+        <item>Send volume down key</item>
     </string-array>
     <string-array name="userActionsVolumeDownValues">
         <item>@array/userActionsValues</item>
@@ -118,7 +118,7 @@
     </string-array>
     <string-array name="userActionsVolumeUpEntries">
         <item>@array/userActionsEntries</item>
-        <item>Ses açma tuşunu gönder</item>
+        <item>Send volume up key</item>
     </string-array>
     <string-array name="userActionsVolumeUpValues">
         <item>@array/userActionsValues</item>
@@ -126,18 +126,18 @@
     </string-array>
     <string-array name="userActionsMediaKeyEntries">
         <item>@array/userActionsEntries</item>
-        <item>Medya eylemini gönder</item>
+        <item>Send media action</item>
     </string-array>
     <string-array name="userActionsMediaKeyValues">
         <item>@array/userActionsValues</item>
         <item>send media action</item>
     </string-array>
     <string-array name="forceOrientationVariantsEntries">
-        <item>Otomatik</item>
-        <item>Dikey (Portre)</item>
-        <item>Yatay (Manzara)</item>
-        <item>Ters dikey</item>
-        <item>Ters yatay</item>
+        <item>Auto</item>
+        <item>Portrait</item>
+        <item>Landscape</item>
+        <item>Reverse portrait</item>
+        <item>Reverse landscape</item>
     </string-array>
     <string-array name="forceOrientationVariants">
         <item>auto</item>
@@ -147,10 +147,10 @@
         <item>reverse landscape</item>
     </string-array>
     <string-array name="ekbarPositionEntries">
-        <item>Üst</item>
-        <item>Alt</item>
-        <item>Sol</item>
-        <item>Sağ</item>
+        <item>Top</item>
+        <item>Bottom</item>
+        <item>Left</item>
+        <item>Right</item>
     </string-array>
     <string-array name="ekbarPositionValues">
         <item>top</item>

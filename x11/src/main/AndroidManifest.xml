@@ -41,7 +41,7 @@
             android:windowSoftInputMode="stateHidden|adjustNothing"
             android:exported="false" />
         <activity
-            android:theme="@style/Theme.AppCompat.DayNight"
+            android:theme="@style/Theme.LoriePreferencesTrampoline"
             android:excludeFromRecents="true"
             android:name=".LoriePreferences"
             android:taskAffinity=".LoriePreferences"

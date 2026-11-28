@@ -5,12 +5,14 @@ def hostApplicationId = "com.termux"
 
 android {
     namespace 'com.termux.x11'
-    //noinspection GrDeprecatedAPIUsage
-    compileSdkVersion project.properties.compileSdkVersion.toInteger()
+    compileSdk {
+        version = release(project.properties.compileSdkVersion.toInteger()) {
+            it.minorApiLevel = project.properties.compileSdkMinorVersion.toInteger()
+        }
+    }
     ndkVersion System.getenv("JITPACK_NDK_VERSION") ?: project.properties.ndkVersion
     defaultConfig {
         minSdkVersion project.properties.minSdkVersion.toInteger()
-        targetSdkVersion project.properties.targetSdkVersion.toInteger()
         buildConfigField "String", "VERSION_NAME", "\"${termuxX11VersionName}\""
         buildConfigField "String", "COMMIT", "\"" + ("git rev-parse HEAD\n".execute().getText().trim() ?: (System.getenv('CURRENT_COMMIT') ?: "NO_COMMIT")) + "\""
         buildConfigField "String", "APPLICATION_ID", "\"${hostApplicationId}\""
@@ -24,18 +26,24 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_9
-        targetCompatibility JavaVersion.VERSION_1_9
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     externalNativeBuild.cmake.path "src/main/cpp/CMakeLists.txt"
-    packagingOptions.jniLibs.useLegacyPackaging false
-    buildFeatures.aidl true
-    buildFeatures.buildConfig true
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+    buildFeatures {
+        aidl = true
+        buildConfig = true
+    }
 }
 
 def compileStubTask = tasks.register("compileStub", JavaCompile) {
     source = fileTree("src/stub/java")
-    classpath = files({ android.bootClasspath })
+    classpath = files(androidComponents.sdkComponents.bootClasspath)
     destinationDirectory = layout.buildDirectory.dir("intermediates/stub_classes")
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -49,13 +57,11 @@ def jarStubTask = tasks.register("jarStub", Jar) {
 }
 
 dependencies {
-    //noinspection DifferentStdlibGradleVersion
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.21"
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.8.0'
     implementation 'androidx.annotation:annotation:1.11.0'
-    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.core:core:1.19.1'
     implementation 'com.google.android.material:material:1.14.0'
     compileOnly files(layout.buildDirectory.file("intermediates/stub_jar/stub.jar")) {
         builtBy jarStubTask
