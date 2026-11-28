@@ -31,6 +31,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Build and Sign Release APKs
         shell: bash {0}
         env:
