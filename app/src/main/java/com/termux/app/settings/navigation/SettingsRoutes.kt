@@ -21,6 +21,15 @@ sealed interface SettingsRoute : NavKey {
     data class TermuxPlugin(val plugin: PluginKind) : SettingsRoute
 
     @Serializable
+    data object TermuxAbout : SettingsRoute
+
+    @Serializable
+    data class WebViewer(
+        val title: String,
+        val url: String,
+    ) : SettingsRoute
+
+    @Serializable
     data object X11Output : SettingsRoute
 
     @Serializable

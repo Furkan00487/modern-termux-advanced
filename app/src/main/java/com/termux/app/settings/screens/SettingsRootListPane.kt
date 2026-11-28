@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.termux.BuildConfig
 import com.termux.R
 import com.termux.app.activities.SettingsSection
 import com.termux.app.settings.components.ExpressiveActionRow
@@ -75,7 +76,6 @@ fun SettingsRootListPane(
     onNavigateToDetail: (SettingsRoute) -> Unit,
     onSearchResultClick: (SettingsSearchEntry) -> Unit,
     onSearchResultToggleSwitch: (SettingsSearchEntry, Boolean) -> Unit,
-    onOpenAbout: () -> Unit,
     onOpenDonate: () -> Unit,
     onCopyX11Version: (String) -> Unit,
     onNavigateUp: (() -> Unit)? = null,
@@ -135,7 +135,6 @@ fun SettingsRootListPane(
                                 currentDetailRoute = currentDetailRoute,
                                 termuxState = termuxState,
                                 onNavigateToDetail = onNavigateToDetail,
-                                onOpenAbout = onOpenAbout,
                                 onOpenDonate = onOpenDonate,
                             )
 
@@ -158,7 +157,6 @@ private fun TermuxCategoriesContent(
     currentDetailRoute: SettingsRoute?,
     termuxState: TermuxSettingsUiState,
     onNavigateToDetail: (SettingsRoute) -> Unit,
-    onOpenAbout: () -> Unit,
     onOpenDonate: () -> Unit,
 ) {
     Column(
@@ -226,14 +224,16 @@ private fun TermuxCategoriesContent(
             SettingsGroupHeader(stringResource(R.string.settings_group_system))
             SettingsSegmentedGroup {
                 val systemCount = if (termuxState.showDonate) 2 else 1
-                ExpressiveActionRow(
+                ExpressiveNavRow(
                     title = stringResource(R.string.about_preference_title),
                     summary = stringResource(R.string.settings_about_summary),
                     icon = Icons.Rounded.Info,
+                    selected = currentDetailRoute == SettingsRoute.TermuxAbout,
                     index = 0,
                     count = systemCount,
-                    onClick = onOpenAbout,
-                    modifier = Modifier.testTag("action_termux_about"),
+                    trailingBadge = "v${BuildConfig.VERSION_NAME}",
+                    onClick = { onNavigateToDetail(SettingsRoute.TermuxAbout) },
+                    modifier = Modifier.testTag("cat_termux_about"),
                 )
                 if (termuxState.showDonate) {
                     ExpressiveActionRow(

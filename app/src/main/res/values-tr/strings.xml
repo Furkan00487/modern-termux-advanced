@@ -293,4 +293,50 @@
     <string name="settings_clipboard_sync_summary">Pano içeriğini Android ve X11 arasında eşitle</string>
     <string name="settings_custom_resolution_hint">Genişlik × Yükseklik (ör. 1920x1080)</string>
 
+    <!-- Hakkında & Dahili WebView Metinleri -->
+    <string name="settings_about_hero_tagline">GNU/Linux paketleri ve X11 masaüstü desteği sunan AMOLED terminal ortamı.</string>
+    <string name="settings_about_copy_report">Raporu kopyala</string>
+    <string name="settings_about_share_report">Paylaş</string>
+    <string name="settings_about_group_version_system">Sürüm ve sistem</string>
+    <string name="settings_about_view_system_report">Sistem raporunu gör</string>
+    <string name="settings_about_view_system_report_summary">Paket, imza SHA-256, ABI, SELinux ve cihaz bilgileri</string>
+    <string name="settings_about_release_notes">Sürüm notları (%1$s)</string>
+    <string name="settings_about_release_notes_summary">Değişiklik günlüğü ve APK\'lar · %1$s</string>
+    <string name="settings_about_group_project">Modern Termux projesi (Furkan00487)</string>
+    <string name="settings_about_active_repo_summary">Aktif Modern Termux deposu · %1$s</string>
+    <string name="settings_about_report_issue">Hata bildir (%1$s)</string>
+    <string name="settings_about_report_issue_summary">Modern Termux GitHub Sorunları · %1$s</string>
+    <string name="settings_about_sibling_repo_summary">Modern Termux ekosistemi · %1$s</string>
+    <string name="settings_about_group_upstream">Orijinal Termux (Upstream) ve belgeler</string>
+    <string name="settings_about_wiki_title">Termux Wiki (Upstream)</string>
+    <string name="settings_about_wiki_summary">Resmi upstream belgeler ve rehberler (wiki.termux.com)</string>
+    <string name="settings_about_upstream_title">Termux Uygulaması (Upstream)</string>
+    <string name="settings_about_upstream_issues_title">Termux Sorunları (Upstream Issues)</string>
+    <string name="settings_about_packages_title">Termux Paketleri (Upstream)</string>
+    <string name="settings_about_reddit_title">r/termux (Upstream)</string>
+    <string name="settings_about_reddit_summary">Resmi upstream Termux topluluğu</string>
+    <string name="settings_about_support_email_title">support@termux.dev (Upstream)</string>
+    <string name="settings_about_support_email_summary">Resmi upstream e-posta desteği</string>
+    <string name="settings_about_donate_upstream_title">Bağış (Upstream Termux)</string>
+    <string name="settings_about_report_dialog_title">Sistem raporu</string>
+    <string name="settings_about_report_mode_summary">Özet</string>
+    <string name="settings_about_report_mode_markdown">Markdown</string>
+    <string name="settings_about_report_copied_item">Panoya kopyalandı</string>
+    <string name="settings_about_field_variant">Varyant</string>
+    <string name="settings_about_field_package">Paket</string>
+    <string name="settings_about_field_version">Sürüm</string>
+    <string name="settings_about_field_bootstrap">Bootstrap / PM</string>
+    <string name="settings_about_field_uid_sdk">UID / Hedef SDK</string>
+    <string name="settings_about_field_build_type">Derleme türü</string>
+    <string name="settings_about_field_apk_release">APK sürümü</string>
+    <string name="settings_about_field_sha256">İmza SHA-256</string>
+    <string name="settings_about_field_selinux">SELinux</string>
+    <string name="settings_about_field_device">Cihaz</string>
+    <string name="settings_about_field_android">Android</string>
+    <string name="settings_about_field_security_patch">Güvenlik yaması</string>
+    <string name="settings_about_field_abis">ABI\'ler</string>
+    <string name="settings_about_field_files_warning">Files dizini uyarısı</string>
+    <string name="settings_about_close">Kapat</string>
+    <string name="settings_web_open_in_browser">Tarayıcıda aç</string>
+
 </resources>

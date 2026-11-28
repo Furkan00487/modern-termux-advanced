@@ -196,9 +196,9 @@ object SettingsSearchIndex {
                 summary = context.getString(R.string.settings_about_summary),
                 section = SettingsSection.TERMUX,
                 categoryTitle = termuxSystemCat,
-                targetRoute = SettingsRoute.RootList,
-                controlType = SearchControlType.ACTION,
-                keywords = "about version info links hakkında sürüm",
+                targetRoute = SettingsRoute.TermuxAbout,
+                controlType = SearchControlType.NAVIGATION,
+                keywords = "about version info links release report hakkında sürüm rapor",
             ),
         )
         if (termux.showDonate) {

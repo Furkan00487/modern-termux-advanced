@@ -62,10 +62,12 @@ import com.termux.app.settings.data.TermuxSettingsRepository
 import com.termux.app.settings.data.X11SettingsRepository
 import com.termux.app.settings.screens.SettingsDetailPlaceholderPane
 import com.termux.app.settings.screens.SettingsRootListPane
+import com.termux.app.settings.screens.TermuxAboutScreen
 import com.termux.app.settings.screens.TermuxDebuggingScreen
 import com.termux.app.settings.screens.TermuxPluginScreen
 import com.termux.app.settings.screens.TermuxTerminalIOScreen
 import com.termux.app.settings.screens.TermuxTerminalViewScreen
+import com.termux.app.settings.screens.TermuxWebViewerScreen
 import com.termux.app.settings.screens.X11ExtraKeysBarScreen
 import com.termux.app.settings.screens.X11KeyboardScreen
 import com.termux.app.settings.screens.X11OtherScreen
@@ -134,6 +136,7 @@ fun SettingsNavHost(
 
     val initialDetailRoute: SettingsRoute? = remember(launchTarget) {
         when {
+            launchTarget.subscreen == "about" -> SettingsRoute.TermuxAbout
             launchTarget.subscreen == "ekbar" -> SettingsRoute.X11ExtraKeysBar
             launchTarget.subscreen == "userActions" -> SettingsRoute.X11UserActions
             launchTarget.subscreen == "output" -> SettingsRoute.X11Output
@@ -245,7 +248,7 @@ fun SettingsNavHost(
                         onSearchResultClick = { entry ->
                             selectedSection = entry.section
                             when (entry.key) {
-                                "about" -> scope.launch { termuxRepo.openAboutReport(context) }
+                                "about" -> backStack.replaceDetail(SettingsRoute.TermuxAbout)
                                 "donate" -> termuxRepo.openDonate(context)
                                 "version" -> copyAndNotify(x11State.x11VersionName)
                                 "requestNotificationPermission" -> requestNotifications()
@@ -265,9 +268,6 @@ fun SettingsNavHost(
                                 "enableAccessibilityServiceAutomatically" -> backStack.replaceDetail(entry.targetRoute)
                                 else -> x11Repo.setBoolean(entry.key, nextValue)
                             }
-                        },
-                        onOpenAbout = {
-                            scope.launch { termuxRepo.openAboutReport(context) }
                         },
                         onOpenDonate = { termuxRepo.openDonate(context) },
                         onCopyX11Version = ::copyAndNotify,
@@ -322,6 +322,46 @@ fun SettingsNavHost(
                         onBack = ::handleBack,
                         onSetPluginLogLevel = termuxRepo::setPluginLogLevel,
                         onSetPluginKeyLogging = termuxRepo::setPluginKeyLogging,
+                    )
+                }
+
+                entry<SettingsRoute.TermuxAbout>(
+                    metadata = ListDetailSceneStrategy.detailPane(),
+                ) {
+                    TermuxAboutScreen(
+                        termuxState = termuxState,
+                        showBackButton = backStack.size > 1,
+                        onBack = ::handleBack,
+                        onLoadAboutInfo = { termuxRepo.loadAboutInfo(context) },
+                        onOpenUrl = { title, url ->
+                            if (url.startsWith("http://") || url.startsWith("https://")) {
+                                backStack.pushChildDetail(SettingsRoute.WebViewer(title = title, url = url))
+                            } else {
+                                termuxRepo.openExternalUrl(context, url)
+                            }
+                        },
+                        onNavigateToDetail = { detail -> backStack.pushChildDetail(detail) },
+                        onCopyText = ::copyAndNotify,
+                        onShareReport = { report ->
+                            termuxRepo.shareAboutReport(
+                                context = context,
+                                title = context.getString(com.termux.R.string.about_preference_title),
+                                report = report,
+                            )
+                        },
+                    )
+                }
+
+                entry<SettingsRoute.WebViewer>(
+                    metadata = ListDetailSceneStrategy.detailPane(),
+                ) { route ->
+                    TermuxWebViewerScreen(
+                        initialTitle = route.title,
+                        initialUrl = route.url,
+                        onBack = ::handleBack,
+                        onOpenInBrowser = { targetUrl ->
+                            termuxRepo.openExternalUrl(context, targetUrl)
+                        },
                     )
                 }
 
