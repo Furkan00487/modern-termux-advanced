@@ -308,8 +308,10 @@
     <string name="settings_about_report_issue_summary">Modern Termux GitHub Sorunları · %1$s</string>
     <string name="settings_about_sibling_repo_summary">Modern Termux ekosistemi · %1$s</string>
     <string name="settings_about_group_upstream">Orijinal Termux (Upstream) ve belgeler</string>
-    <string name="settings_about_wiki_title">Termux Wiki (Upstream)</string>
-    <string name="settings_about_wiki_summary">Resmi upstream belgeler ve rehberler (wiki.termux.com)</string>
+    <string name="settings_about_docs_title">Termux Docs (Upstream)</string>
+    <string name="settings_about_docs_summary">Resmi upstream belgeleri (termux.dev/docs)</string>
+    <string name="settings_about_packages_wiki_title">Termux Packages Wiki (Upstream)</string>
+    <string name="settings_about_packages_wiki_summary">Paket yönetimi ve derleme rehberleri (GitHub Wiki)</string>
     <string name="settings_about_upstream_title">Termux Uygulaması (Upstream)</string>
     <string name="settings_about_upstream_issues_title">Termux Sorunları (Upstream Issues)</string>
     <string name="settings_about_packages_title">Termux Paketleri (Upstream)</string>

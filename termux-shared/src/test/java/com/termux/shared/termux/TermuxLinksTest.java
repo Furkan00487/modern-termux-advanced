@@ -25,9 +25,11 @@ public class TermuxLinksTest {
     public void testUpstreamLabelsAreNotMaskedAsModernTermux() {
         assertEquals("Termux", TermuxConstants.TERMUX_UPSTREAM_APP_NAME);
         assertEquals("Termux Site", TermuxConstants.TERMUX_SITE);
-        assertEquals("Termux Wiki", TermuxConstants.TERMUX_WIKI);
+        assertEquals("Termux Docs", TermuxConstants.TERMUX_DOCS);
+        assertEquals("https://termux.dev/docs", TermuxConstants.TERMUX_DOCS_URL);
+        assertEquals("https://termux.dev/docs", TermuxConstants.TERMUX_WIKI_URL);
         assertEquals("https://github.com/termux/termux-app", TermuxConstants.TERMUX_GITHUB_REPO_URL);
-        assertEquals("https://github.com/termux/termux-app/wiki", TermuxConstants.TERMUX_GITHUB_WIKI_REPO_URL);
+        assertEquals("https://github.com/termux/termux-packages/wiki", TermuxConstants.TERMUX_PACKAGES_GITHUB_WIKI_REPO_URL);
     }
 
     @Test
@@ -48,11 +50,11 @@ public class TermuxLinksTest {
 
         assertTrue(links.contains("### Upstream Termux (GitHub)"));
         assertTrue(links.contains("[Termux (Upstream)](https://github.com/termux/termux-app)"));
-        assertTrue(links.contains("[Termux Wiki (wiki.termux.com)](https://wiki.termux.com)"));
-        assertTrue(links.contains("[termux-app (GitHub Wiki)](https://github.com/termux/termux-app/wiki)"));
+        assertTrue(links.contains("[Termux Docs (termux.dev/docs)](https://termux.dev/docs)"));
         assertTrue(links.contains("[termux-packages (GitHub Wiki)](https://github.com/termux/termux-packages/wiki)"));
 
-        assertFalse(links.contains("[Termux (Upstream) Wiki](https://github.com/termux/termux-app/wiki)"));
+        assertFalse(links.contains("wiki.termux.com"));
+        assertFalse(links.contains("wiki.termux.dev"));
         assertFalse(links.contains("[Modern Termux](https://github.com/termux/termux-app)"));
         assertFalse(links.contains("[Modern Termux Wiki](https://wiki.termux.com)"));
         assertFalse(links.contains("[Modern Termux](https://github.com/termux/termux-app/wiki)"));

@@ -1,11 +1,13 @@
 package com.termux.app.settings.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -59,11 +61,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.termux.BuildConfig
@@ -202,7 +204,9 @@ fun TermuxAboutScreen(
                             icon = Icons.Rounded.Verified,
                             index = 0,
                             count = 2,
-                            valueBadge = aboutInfo?.apkRelease?.takeIf { it.isNotBlank() && it != "unknown" },
+                            valueBadge = aboutInfo?.apkRelease?.takeIf {
+                                it.isNotBlank() && !it.equals("unknown", ignoreCase = true)
+                            },
                             onClick = { showSystemReportDialog = true },
                             modifier = Modifier.testTag("about_view_system_report"),
                         )
@@ -286,7 +290,8 @@ fun TermuxAboutScreen(
             }
 
             item(key = "upstream_and_docs") {
-                val wikiTitle = stringResource(R.string.settings_about_wiki_title)
+                val docsTitle = stringResource(R.string.settings_about_docs_title)
+                val packagesWikiTitle = stringResource(R.string.settings_about_packages_wiki_title)
                 val upstreamTitle = stringResource(R.string.settings_about_upstream_title)
                 val upstreamIssuesTitle = stringResource(R.string.settings_about_upstream_issues_title)
                 val packagesTitle = stringResource(R.string.settings_about_packages_title)
@@ -296,11 +301,20 @@ fun TermuxAboutScreen(
                 val items = buildList {
                     add(
                         AboutLinkItem(
-                            title = wikiTitle,
-                            summary = stringResource(R.string.settings_about_wiki_summary),
-                            url = TermuxConstants.TERMUX_WIKI_URL,
+                            title = docsTitle,
+                            summary = stringResource(R.string.settings_about_docs_summary),
+                            url = TermuxConstants.TERMUX_DOCS_URL,
                             icon = Icons.Rounded.MenuBook,
-                            testTag = "about_wiki_link",
+                            testTag = "about_docs_link",
+                        ),
+                    )
+                    add(
+                        AboutLinkItem(
+                            title = packagesWikiTitle,
+                            summary = stringResource(R.string.settings_about_packages_wiki_summary),
+                            url = TermuxConstants.TERMUX_PACKAGES_GITHUB_WIKI_REPO_URL,
+                            icon = Icons.Rounded.MenuBook,
+                            testTag = "about_packages_wiki_link",
                         ),
                     )
                     add(
@@ -387,6 +401,7 @@ fun TermuxAboutScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AboutHeroCard(
     variantName: String,
@@ -413,23 +428,14 @@ private fun AboutHeroCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)),
-                    modifier = Modifier.size(48.dp),
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = ">_",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold,
-                            ),
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
+                Image(
+                    painter = painterResource(R.drawable.ic_modern_termux_logo),
+                    contentDescription = variantName,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .size(54.dp)
+                        .testTag("about_hero_logo"),
+                )
 
                 Column(
                     modifier = Modifier.weight(1f),
@@ -442,9 +448,9 @@ private fun AboutHeroCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Row(
+                    FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         HeroMetaPill(text = versionLabel, highlighted = true)
                         HeroMetaPill(
@@ -471,6 +477,7 @@ private fun AboutHeroCard(
                         .weight(1f)
                         .testTag("about_copy_report_button"),
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -481,10 +488,11 @@ private fun AboutHeroCard(
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = stringResource(R.string.settings_about_copy_report),
                         maxLines = 1,
+                        softWrap = false,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -495,6 +503,7 @@ private fun AboutHeroCard(
                         .weight(1f)
                         .testTag("about_share_report_button"),
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 ) {
                     Icon(
@@ -503,11 +512,12 @@ private fun AboutHeroCard(
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.primary,
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = stringResource(R.string.settings_about_share_report),
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
+                        softWrap = false,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

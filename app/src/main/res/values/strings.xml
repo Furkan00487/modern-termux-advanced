@@ -318,8 +318,10 @@
     <string name="settings_about_report_issue_summary">Modern Termux GitHub Issues · %1$s</string>
     <string name="settings_about_sibling_repo_summary">Modern Termux ecosystem · %1$s</string>
     <string name="settings_about_group_upstream">Upstream Termux &amp; docs</string>
-    <string name="settings_about_wiki_title">Termux Wiki (Upstream)</string>
-    <string name="settings_about_wiki_summary">Official upstream docs and command guides (wiki.termux.com)</string>
+    <string name="settings_about_docs_title">Termux Docs (Upstream)</string>
+    <string name="settings_about_docs_summary">Official upstream documentation (termux.dev/docs)</string>
+    <string name="settings_about_packages_wiki_title">Termux Packages Wiki (Upstream)</string>
+    <string name="settings_about_packages_wiki_summary">Package management and build guides (GitHub Wiki)</string>
     <string name="settings_about_upstream_title">Termux App (Upstream)</string>
     <string name="settings_about_upstream_issues_title">Termux Issues (Upstream)</string>
     <string name="settings_about_packages_title">Termux Packages (Upstream)</string>

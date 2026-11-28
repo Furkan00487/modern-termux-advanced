@@ -71,6 +71,7 @@ class TermuxAboutScreenTest {
             .performClick()
 
         composeRule.onNodeWithTag("about_hero_card").assertIsDisplayed()
+        composeRule.onNodeWithTag("about_hero_logo", useUnmergedTree = true).assertIsDisplayed()
         composeRule.onNodeWithTag("about_screen_list")
             .performScrollToNode(hasTestTag("about_view_system_report"))
         composeRule.onNodeWithTag("about_view_system_report").assertIsDisplayed()
@@ -81,6 +82,18 @@ class TermuxAboutScreenTest {
         composeRule.onNodeWithText(
             context.getString(R.string.settings_about_report_issue, TermuxConstants.MODERN_TERMUX_VARIANT_NAME),
         ).assertIsDisplayed()
+
+        composeRule.onNodeWithTag("about_screen_list")
+            .performScrollToNode(hasTestTag("about_docs_link"))
+        composeRule.onNodeWithTag("about_docs_link").assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_about_docs_title))
+            .assertIsDisplayed()
+
+        composeRule.onNodeWithTag("about_screen_list")
+            .performScrollToNode(hasTestTag("about_packages_wiki_link"))
+        composeRule.onNodeWithTag("about_packages_wiki_link").assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_about_packages_wiki_title))
+            .assertIsDisplayed()
 
         composeRule.onNodeWithTag("about_screen_list")
             .performScrollToNode(hasTestTag("about_upstream_issues_link"))

@@ -543,7 +543,7 @@ public class TermuxUtils {
     public static String getReportIssueMarkdownString(@NonNull final Context context) {
         if (context == null) return "null";
 
-        return buildReportIssueMarkdownString(context.getString(R.string.msg_report_issue, TermuxConstants.TERMUX_WIKI_URL));
+        return buildReportIssueMarkdownString(context.getString(R.string.msg_report_issue, TermuxConstants.TERMUX_DOCS_URL));
     }
 
     static String buildReportIssueMarkdownString(@NonNull final String reportIssueMessage) {
@@ -622,9 +622,8 @@ public class TermuxUtils {
         markdownString.append("\n\n### Reddit\n");
         appendMarkdownLink(markdownString, TermuxConstants.TERMUX_REDDIT_SUBREDDIT, TermuxConstants.TERMUX_REDDIT_SUBREDDIT_URL);
 
-        markdownString.append("\n\n### Wiki (Upstream Termux)\n");
-        appendMarkdownLink(markdownString, TermuxConstants.TERMUX_WIKI + " (wiki.termux.com)", TermuxConstants.TERMUX_WIKI_URL);
-        appendMarkdownLink(markdownString, TermuxConstants.TERMUX_GITHUB_REPO_NAME + " (GitHub Wiki)", TermuxConstants.TERMUX_GITHUB_WIKI_REPO_URL);
+        markdownString.append("\n\n### Docs & Wiki (Upstream Termux)\n");
+        appendMarkdownLink(markdownString, TermuxConstants.TERMUX_DOCS + " (termux.dev/docs)", TermuxConstants.TERMUX_DOCS_URL);
         appendMarkdownLink(markdownString, TermuxConstants.TERMUX_PACKAGES_GITHUB_REPO_NAME + " (GitHub Wiki)", TermuxConstants.TERMUX_PACKAGES_GITHUB_WIKI_REPO_URL);
 
         markdownString.append("\n##\n");
